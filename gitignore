@@ -1,0 +1,9 @@
+.venv
+env/
+__pycache__/
+src/implementation_plan.md
+# Python compiled files
+*.py[cod]
+*.pyo
+*$py.class
+*.h

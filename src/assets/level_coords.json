@@ -1,0 +1,53 @@
+{
+  "image_size": { "width": 1254, "height": 1254 },
+  "levels": [
+    {
+      "id": 1,
+      "name": "Test Alpha",
+      "x": 665,
+      "y": 705,
+      "width": 540,
+      "height": 490,
+      "x2": 1205,
+      "y2": 1195,
+      "center_x": 935,
+      "center_y": 950
+    },
+    {
+      "id": 2,
+      "name": "Test Beta",
+      "x": 40,
+      "y": 480,
+      "width": 565,
+      "height": 505,
+      "x2": 605,
+      "y2": 985,
+      "center_x": 322,
+      "center_y": 732
+    },
+    {
+      "id": 3,
+      "name": "Test Gamma",
+      "x": 595,
+      "y": 265,
+      "width": 305,
+      "height": 380,
+      "x2": 900,
+      "y2": 645,
+      "center_x": 747,
+      "center_y": 455
+    },
+    {
+      "id": 4,
+      "name": "Test Delta",
+      "x": 905,
+      "y": 65,
+      "width": 320,
+      "height": 395,
+      "x2": 1225,
+      "y2": 460,
+      "center_x": 1065,
+      "center_y": 262
+    }
+  ]
+}
