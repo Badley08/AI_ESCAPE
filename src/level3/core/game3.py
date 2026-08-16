@@ -23,9 +23,9 @@ class Game3:
         self.bg_image = pygame.transform.smoothscale(
             self.bg_image, (self.tilemap.map_width, self.tilemap.map_height))
 
-        # 2. Joueur (spawn en bas au centre)
-        spawn_x = self.tilemap.map_width // 2
-        spawn_y = self.tilemap.map_height - 60
+        # 2. Joueur (spawn à l'entrée sud, à l'intérieur de l'arène de combat)
+        spawn_x = 840.0
+        spawn_y = 744.0
         self.player = Player3(spawn_x, spawn_y, self.tilemap)
 
         # Batterie : récupère la valeur sauvegardée ou 100%
@@ -40,18 +40,12 @@ class Game3:
         self.enemy_projectiles = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
 
-        # 4. Terminaux (3 générateurs disposés dans l'arène)
-        mw = self.tilemap.map_width
-        mh = self.tilemap.map_height
+        # 4. Terminaux (3 générateurs disposés dans les ailes de l'arène)
         self.terminals = [
-            Terminal(mw * 0.2, mh * 0.3, 1),   # Haut gauche
-            Terminal(mw * 0.8, mh * 0.3, 2),   # Haut droite
-            Terminal(mw * 0.5, mh * 0.55, 3),  # Centre
+            Terminal(376, 472, 1),   # Aile Ouest
+            Terminal(1288, 472, 2),  # Aile Est
+            Terminal(840, 344, 3),   # Centre Nord
         ]
-        # Vérifier que les terminaux sont en zone praticable
-        for t in self.terminals:
-            if not self.tilemap.is_walkable(t.x, t.y):
-                self._relocate_terminal(t)
 
         # 5. Système de vagues
         self.current_wave = 0
@@ -71,8 +65,8 @@ class Game3:
         self.battery_bonus_awarded = 0.0
         self.final_transferred_battery = 100.0
 
-        # 8. Porte de sortie (haut centre)
-        self.exit_rect = pygame.Rect(mw // 2 - 20, 20, 40, 40)
+        # 8. Porte de sortie (haut centre dans l'arène)
+        self.exit_rect = pygame.Rect(812, 170, 56, 56)
         self.exit_open = False
 
         # 9. Overlays pré-alloués
