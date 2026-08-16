@@ -3,7 +3,7 @@ import pygame
 
 
 class Player3(pygame.sprite.Sprite):
-    """RTB-O9 armé — animation de marche fluide, rotation précise vers la visée, tir Clic Gauche ou ESPACE."""
+    """RTB-O9 armé en vue 2D — conserve sa posture verticale naturelle avec retournement gauche/droite et animation fluide."""
 
     SPEED = 3.8
 
@@ -11,7 +11,7 @@ class Player3(pygame.sprite.Sprite):
         super().__init__()
         self.tilemap = tilemap
 
-        # Chargement et mise à l'échelle des 7 frames
+        # Chargement des 7 frames originales
         sprite_names = [
             'rtb_o9_sprite_01_weapon_lowered.png',
             'rtb_o9_sprite_02_walk_left.png',
@@ -21,34 +21,32 @@ class Player3(pygame.sprite.Sprite):
             'rtb_o9_sprite_06_walk_passing.png',
             'rtb_o9_sprite_07_walk_right.png',
         ]
-        self.base_images = []
+        
+        # Images de base orientées à droite
+        self.images_right = []
+        self.images_left = []
         for name in sprite_names:
             img = pygame.image.load(f'level3/assets/{name}').convert_alpha()
             ratio = img.get_width() / img.get_height()
-            w = int(40 * ratio)
-            img = pygame.transform.smoothscale(img, (w, 40))
-            self.base_images.append(img)
+            w = int(48 * ratio)
+            scaled = pygame.transform.smoothscale(img, (w, 48))
+            self.images_right.append(scaled)
+            self.images_left.append(pygame.transform.flip(scaled, True, False))
 
-        # Séquence de marche continue
-        self.walk_frames = [
-            self.base_images[0],
-            self.base_images[1],
-            self.base_images[5],
-            self.base_images[2],
-            self.base_images[6]
-        ]
-        self.aim_frame = self.base_images[3]
+        # Séquence de cycle de marche complet (5 frames)
+        self.walk_idx = [0, 1, 5, 2, 6]
+        # Frame de visée / tir
+        self.aim_idx = 3
 
+        self.facing_right = True
         self.current_frame = 0.0
-        # Angle de rotation (0° = vers le bas, 90° = droite, 180° = haut, -90° = gauche)
-        self.rot_angle = 0.0
-        self.fire_angle = 0.0  # Angle de lancement du projectile (0° = droite, 90° = haut)
-        self.image = self.base_images[0]
+        self.fire_angle = 0.0  # Angle de lancement balistique du laser
 
+        self.image = self.images_right[0]
         self.pos_x = float(x)
         self.pos_y = float(y)
 
-        self.hitbox = pygame.Rect(0, 0, 14, 14)
+        self.hitbox = pygame.Rect(0, 0, 16, 16)
         self.hitbox.center = (round(self.pos_x), round(self.pos_y))
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
@@ -109,18 +107,23 @@ class Player3(pygame.sprite.Sprite):
             self.is_moving = False
 
     def update_aim(self, mouse_world_x, mouse_world_y):
-        """Oriente le corps, le casque et l'arme de RTB-O9 vers le curseur."""
+        """Oriente le visage et le regard de RTB-O9 vers le curseur sans rotation déformante."""
         dx = mouse_world_x - self.pos_x
         dy = mouse_world_y - self.pos_y
-        # Angle balistique pour les lasers (0° = droite, 90° = haut)
+        
+        # Le regard et le corps changent d'orientation vers la droite ou la gauche du curseur
+        if dx >= 0:
+            self.facing_right = True
+        else:
+            self.facing_right = False
+
+        # Angle balistique pour la trajectoire du laser
         self.fire_angle = math.degrees(math.atan2(-dy, dx))
-        # Angle de rotation du sprite (car le sprite de base regarde vers le bas = vecteur (0, 1))
-        self.rot_angle = -math.degrees(math.atan2(dy, dx)) + 90.0
 
     def try_shoot(self):
-        """Déclenche un tir plasma si le cooldown est écoulé."""
+        """Déclenche un tir plasma si le cooldown est prêt."""
         if self.shoot_cooldown <= 0:
-            self.shoot_cooldown = 14  # ~4.3 tirs par seconde à 60 FPS
+            self.shoot_cooldown = 14
             self.is_shooting = True
             return True
         return False
@@ -129,24 +132,29 @@ class Player3(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-        # Choix de la frame d'animation
-        if self.is_shooting:
-            base_frame = self.aim_frame
+        img_set = self.images_right if self.facing_right else self.images_left
+
+        # Choix de la posture/animation naturelle
+        if self.is_shooting or self.shoot_cooldown > 8:
+            # Posture de visée avec arme levée
+            self.image = img_set[self.aim_idx]
             self.is_shooting = False
         elif self.is_moving:
-            self.current_frame += 0.18
-            if self.current_frame >= len(self.walk_frames):
+            # Cycle de marche fluide
+            self.current_frame += 0.16
+            if self.current_frame >= len(self.walk_idx):
                 self.current_frame = 0.0
-            base_frame = self.walk_frames[int(self.current_frame)]
+            frame_no = self.walk_idx[int(self.current_frame)]
+            self.image = img_set[frame_no]
         else:
+            # Posture d'attente au repos
             self.current_frame = 0.0
-            base_frame = self.walk_frames[0]
+            self.image = img_set[0]
 
-        # Rotation précise vers la cible visée
-        self.image = pygame.transform.rotate(base_frame, self.rot_angle)
+        # Le sprite reste toujours droit et ancré à sa hitbox
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
-        # Décharge passive
+        # Décharge passive douce
         self.battery -= 0.003
         if self.battery < 0:
             self.battery = 0.0

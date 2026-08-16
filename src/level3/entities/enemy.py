@@ -5,12 +5,12 @@ from level3.entities.projectile import Projectile
 
 
 class EnemyRobot(pygame.sprite.Sprite):
-    """Robot ennemi corrompu — Rôles différenciés (Gardes noirs & Patrouilleurs) et IA tactique."""
+    """Robot ennemi en vue 2D — posture droite naturelle avec orientation gauche/droite et IA de garde/patrouille."""
 
     SPEED = 2.0
     DETECTION_RANGE = 280
     COVER_RANGE = 120
-    FIRE_INTERVAL = 90  # Salve toutes les ~1.5 secondes
+    FIRE_INTERVAL = 90
 
     _global_fire_clock = 0
 
@@ -32,9 +32,14 @@ class EnemyRobot(pygame.sprite.Sprite):
         sprite_files = {1: 'enemy_robot.png', 2: 'enemy_robot2.png', 3: 'enemy_robot3.png'}
         raw = pygame.image.load(f'level3/assets/{sprite_files.get(variant, "enemy_robot.png")}').convert_alpha()
         ratio = raw.get_width() / raw.get_height()
-        size_h = 44 + variant * 4
-        self.base_image = pygame.transform.smoothscale(raw, (int(size_h * ratio), size_h))
-        self.image = self.base_image
+        size_h = 48 + variant * 4
+
+        # Images droite et gauche pré-générées pour posture 2D naturelle
+        scaled = pygame.transform.smoothscale(raw, (int(size_h * ratio), size_h))
+        self.image_right = scaled
+        self.image_left = pygame.transform.flip(scaled, True, False)
+        self.facing_right = True
+        self.image = self.image_right
 
         self.pos_x = float(x)
         self.pos_y = float(y)
@@ -42,11 +47,10 @@ class EnemyRobot(pygame.sprite.Sprite):
         self.hitbox.center = (round(self.pos_x), round(self.pos_y))
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
-        self.max_hp = variant + 1  # 2, 3, 4 PV
+        self.max_hp = variant + 1
         self.hp = self.max_hp
-        self.rot_angle = 0.0
 
-        # IA d'état
+        # États IA
         self.state = 'guard' if self.is_guard else 'patrol'
         self.patrol_dir_x = random.choice([-1, 0, 1])
         self.patrol_dir_y = random.choice([-1, 0, 1])
@@ -57,7 +61,6 @@ class EnemyRobot(pygame.sprite.Sprite):
         self.has_line_of_sight = False
 
     def alert_to_terminal(self, terminal_pos):
-        """Alerte envoyée au garde quand un terminal est activé pour qu'il aille inspecter."""
         if self.is_guard:
             self.investigating_target = terminal_pos
             self.state = 'investigate'
@@ -116,13 +119,11 @@ class EnemyRobot(pygame.sprite.Sprite):
         dist_to_player = math.hypot(self.pos_x - player.pos_x, self.pos_y - player.pos_y)
         self.has_line_of_sight = self._check_los(player.pos_x, player.pos_y)
 
-        # Transitions d'état
+        # Transitions IA
         if dist_to_player < self.DETECTION_RANGE and self.has_line_of_sight:
-            # Joueur repéré !
             if self.state not in ('chase', 'cover_seek', 'cover_fire'):
                 self.state = 'chase'
         elif dist_to_player > self.DETECTION_RANGE * 1.3:
-            # Perte de contact
             if self.state in ('chase', 'cover_seek', 'cover_fire'):
                 if self.is_guard and self.investigating_target:
                     self.state = 'investigate'
@@ -152,11 +153,10 @@ class EnemyRobot(pygame.sprite.Sprite):
                 self.state = 'chase'
                 self.cover_pos = None
 
-        # Déplacement selon l'état
+        # Déplacement
         step_x, step_y = 0.0, 0.0
 
         if self.state == 'guard':
-            # Garde en sentinelle autour de son poste
             self.patrol_timer -= 1
             if self.patrol_timer <= 0:
                 self.patrol_dir_x = random.choice([-1, 0, 1])
@@ -166,7 +166,6 @@ class EnemyRobot(pygame.sprite.Sprite):
             step_y = self.patrol_dir_y * self.SPEED * 0.25
 
         elif self.state == 'investigate' and self.investigating_target:
-            # Se déplace vers le terminal piraté
             tx, ty = self.investigating_target
             dx = tx - self.pos_x
             dy = ty - self.pos_y
@@ -175,7 +174,6 @@ class EnemyRobot(pygame.sprite.Sprite):
                 step_x = (dx / d) * self.SPEED * 0.8
                 step_y = (dy / d) * self.SPEED * 0.8
             else:
-                # Arrivé au terminal : reste en garde sur place
                 self.state = 'guard'
                 self.investigating_target = None
 
@@ -203,13 +201,13 @@ class EnemyRobot(pygame.sprite.Sprite):
                 step_x = (dx / d) * self.SPEED * 1.1
                 step_y = (dy / d) * self.SPEED * 1.1
 
-        # Orientation dynamique (le sprite de base regarde vers le bas = vecteur (0, 1))
+        # Orientation naturelle gauche/droite
         if dist_to_player < self.DETECTION_RANGE:
-            self.rot_angle = -math.degrees(math.atan2(player.pos_y - self.pos_y, player.pos_x - self.pos_x)) + 90.0
-        elif step_x != 0 or step_y != 0:
-            self.rot_angle = -math.degrees(math.atan2(step_y, step_x)) + 90.0
+            self.facing_right = (player.pos_x >= self.pos_x)
+        elif step_x != 0:
+            self.facing_right = (step_x > 0)
 
-        # Déplacement X avec collision murale
+        # Déplacement X avec collision
         if step_x != 0:
             self.pos_x += step_x
             self.hitbox.centerx = round(self.pos_x)
@@ -222,7 +220,7 @@ class EnemyRobot(pygame.sprite.Sprite):
                     self.pos_x = float(self.hitbox.centerx)
                     self.patrol_dir_x = -self.patrol_dir_x
 
-        # Déplacement Y avec collision murale
+        # Déplacement Y avec collision
         if step_y != 0:
             self.pos_y += step_y
             self.hitbox.centery = round(self.pos_y)
@@ -239,7 +237,7 @@ class EnemyRobot(pygame.sprite.Sprite):
         self.pos_y = max(20.0, min(self.tilemap.map_height - 20.0, self.pos_y))
         self.hitbox.center = (round(self.pos_x), round(self.pos_y))
 
-        # Tir double d'épaule synchronisé
+        # Tir double synchronisé
         can_fire = (self.state in ('chase', 'cover_fire') and
                     self.has_line_of_sight and
                     dist_to_player < self.DETECTION_RANGE)
@@ -258,8 +256,8 @@ class EnemyRobot(pygame.sprite.Sprite):
             if snd_enemy_laser:
                 snd_enemy_laser.play()
 
-        # Rendu orienté
-        self.image = pygame.transform.rotate(self.base_image, self.rot_angle)
+        # Image orientée gauche/droite sans rotation inclinée
+        self.image = self.image_right if self.facing_right else self.image_left
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
     def take_hit(self):
