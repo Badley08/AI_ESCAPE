@@ -1,7 +1,9 @@
 {
   "unlocked_levels": [
     1,
-    2
+    2,
+    3,
+    4
   ],
   "last_mode": "level_select",
   "saved_battery": 100.0,
