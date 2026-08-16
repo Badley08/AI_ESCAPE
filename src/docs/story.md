@@ -14,7 +14,7 @@ Premier test: vous etes dans une piece, et vous devez eviter les tirs d'autres r
 vous pouvez vous deplacer avec les touches directionnelles ou utiliser les touches "WASD" ou encore les fleches directionnelles.
 
 # LEVEL 2 surnommé: TEST BETA
-Deuxieme test: vous etes dans une piece, et vous devez activer des boutons dans un ordre specifique pour ouvrir la porte.
+Deuxieme test: vous etes dans un labyrinthe, et vous devez collecter 5 fragments de donnees pour ouvrir la porte. Mais attention, un imposant robot de nettoyage invincible vous traque.
 vous pouvez vous deplacer avec les touches directionnelles ou utiliser les touches "WASD" ou encore les fleches directionnelles.
 
 # LEVEL 3 surnommé: TEST GAMMA

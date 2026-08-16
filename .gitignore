@@ -9,3 +9,5 @@ src/__pycache__
 *.py
 *.pyw
 __pycache__
+/docs/level2_assets_prompts.md
+.gitignore
