@@ -1,25 +1,27 @@
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import pygame
-from game import Game
-from hud import HUD
+from level1.core.game import Game
+from level1.ui.hud import HUD
 pygame.init()
 
 
 #Game window
 pygame.display.set_caption("AI_ESCAPE")
-app_icon = pygame.image.load('assets/logo.bmp')
+app_icon = pygame.image.load('level1/assets/app_icon.png')
 pygame.display.set_icon(app_icon)
 screen = pygame.display.set_mode((1080, 720))
 
 #Background
-background = pygame.image.load('assets/background.bmp')
+background = pygame.image.load('level1/assets/background.png')
 
 #Load the game over and victory images
-game_over_image = pygame.image.load('assets/game_over.bmp')
+game_over_image = pygame.image.load('level1/assets/game_over.png')
 game_over_image = pygame.transform.smoothscale(game_over_image, (800, 250))
-victory_image = pygame.image.load('assets/victory.bmp')
+victory_image = pygame.image.load('level1/assets/victory.png')
 victory_image = pygame.transform.smoothscale(victory_image, (800, 250))
 #Load the explosion image for game over screen
-explosion_image = pygame.image.load('assets/explosion.bmp')
+explosion_image = pygame.image.load('level1/assets/explosion.png')
 explosion_image = pygame.transform.smoothscale(explosion_image, (400, 400))
 
 #load our player
@@ -31,13 +33,19 @@ hud = HUD()
 #Clock for FPS cap
 clock = pygame.time.Clock()
 
+# Hide default cursor and load custom pointer
+pygame.mouse.set_visible(False)
+pointer_image = pygame.image.load('level1/assets/pointer.png')
+# Since it is large (755KB), scale it down to a typical cursor size
+pointer_image = pygame.transform.smoothscale(pointer_image, (48, 48))
+
 running = True
 
 # Splash Screen logic
-splash_image = pygame.image.load('assets/splash-screen.bmp')
+splash_image = pygame.image.load('level1/assets/splash-screen.png')
 splash_image = pygame.transform.smoothscale(splash_image, (1080, 720))
 
-pygame.mixer.music.load('sounds/sleepless_corridor.mp3')
+pygame.mixer.music.load('level1/sounds/sleepless_corridor.mp3')
 pygame.mixer.music.set_volume(1.0)
 pygame.mixer.music.play(-1)
 
@@ -70,7 +78,7 @@ while showing_splash and running:
                 showing_splash = False
 
 # Level Selection logic
-level_image = pygame.image.load('assets/level.bmp')
+level_image = pygame.image.load('level1/assets/level.png')
 level_image = pygame.transform.smoothscale(level_image, (720, 720))
 level_1_rect = pygame.Rect(561, 404, 310, 281)
 
@@ -161,6 +169,10 @@ while running:
         restart_text = font_small.render("Press R to restart or ESC to quit", True, (0, 150, 255))
         restart_rect = restart_text.get_rect(centerx=540, y=520)
         screen.blit(restart_text, restart_rect)
+
+    # Draw the custom pointer
+    mouse_pos = pygame.mouse.get_pos()
+    screen.blit(pointer_image, mouse_pos)
 
     #Update the display
     pygame.display.flip()
