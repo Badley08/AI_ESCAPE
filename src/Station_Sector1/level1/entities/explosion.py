@@ -6,7 +6,7 @@ class Explosion(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         #Load and resize the explosion image
-        self.image = pygame.image.load('level1/assets/explosion.png')
+        self.image = pygame.image.load('Station_Sector1/level1/assets/explosion.png')
         self.image = pygame.transform.smoothscale(self.image, (300, 300))
         self.rect = self.image.get_rect()
         #Position the explosion at the center

@@ -1,13 +1,13 @@
 import math
 import random
 import pygame
-from level3.core.tilemap3 import TileMap3
-from level3.entities.player3 import Player3
-from level3.entities.enemy import EnemyRobot
-from level3.entities.projectile import Projectile
-from level3.entities.terminal import Terminal
-from level3.entities.explosion3 import Explosion3
-from level3.ui.hud3 import HUD3
+from Station_Sector1.level3.core.tilemap3 import TileMap3
+from Station_Sector1.level3.entities.player3 import Player3
+from Station_Sector1.level3.entities.enemy import EnemyRobot
+from Station_Sector1.level3.entities.projectile import Projectile
+from Station_Sector1.level3.entities.terminal import Terminal
+from Station_Sector1.level3.entities.explosion3 import Explosion3
+from Station_Sector1.level3.ui.hud3 import HUD3
 
 
 class Game3:
@@ -18,8 +18,8 @@ class Game3:
 
     def __init__(self, saved_data=None):
         # 1. Carte de l'arène
-        self.tilemap = TileMap3('level3/assets/level3_grid.json')
-        self.bg_image = pygame.image.load('level3/assets/level3_background.png').convert()
+        self.tilemap = TileMap3('Station_Sector1/level3/assets/level3_grid.json')
+        self.bg_image = pygame.image.load('Station_Sector1/level3/assets/level3_background.png').convert()
         self.bg_image = pygame.transform.smoothscale(
             self.bg_image, (self.tilemap.map_width, self.tilemap.map_height))
 
@@ -84,13 +84,13 @@ class Game3:
 
         # 9. Audio
         try:
-            self.snd_player_laser = pygame.mixer.Sound('level3/sounds/laser_player.mp3')
+            self.snd_player_laser = pygame.mixer.Sound('Station_Sector1/level3/sounds/laser_player.mp3')
             self.snd_player_laser.set_volume(0.5)
-            self.snd_enemy_laser = pygame.mixer.Sound('level3/sounds/laser_enemy.mp3')
+            self.snd_enemy_laser = pygame.mixer.Sound('Station_Sector1/level3/sounds/laser_enemy.mp3')
             self.snd_enemy_laser.set_volume(0.35)
-            self.snd_robot_destroyed = pygame.mixer.Sound('level3/sounds/robot_destroyed.mp3')
+            self.snd_robot_destroyed = pygame.mixer.Sound('Station_Sector1/level3/sounds/robot_destroyed.mp3')
             self.snd_robot_destroyed.set_volume(0.8)
-            self.snd_terminal = pygame.mixer.Sound('level3/sounds/terminal_activated.mp3')
+            self.snd_terminal = pygame.mixer.Sound('Station_Sector1/level3/sounds/terminal_activated.mp3')
             self.snd_terminal.set_volume(0.9)
         except Exception:
             self.snd_player_laser = None

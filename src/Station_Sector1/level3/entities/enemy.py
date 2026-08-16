@@ -1,7 +1,7 @@
 import math
 import random
 import pygame
-from level3.entities.projectile import Projectile
+from Station_Sector1.level3.entities.projectile import Projectile
 
 
 class EnemyRobot(pygame.sprite.Sprite):
@@ -30,7 +30,7 @@ class EnemyRobot(pygame.sprite.Sprite):
         self.guard_terminal = guard_terminal
 
         sprite_files = {1: 'enemy_robot.png', 2: 'enemy_robot2.png', 3: 'enemy_robot3.png'}
-        raw = pygame.image.load(f'level3/assets/{sprite_files.get(variant, "enemy_robot.png")}').convert_alpha()
+        raw = pygame.image.load(f'Station_Sector1/level3/assets/{sprite_files.get(variant, "enemy_robot.png")}').convert_alpha()
         ratio = raw.get_width() / raw.get_height()
         size_h = 48 + variant * 4
 

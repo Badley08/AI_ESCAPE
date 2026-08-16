@@ -10,7 +10,7 @@ class HUD2:
         self.font_small = pygame.font.Font(None, 22)
 
         # Cadre de batterie
-        raw_battery = pygame.image.load('level2/battery_frame.png').convert_alpha()
+        raw_battery = pygame.image.load('Station_Sector1/level2/battery_frame.png').convert_alpha()
         self.battery_frame = pygame.transform.smoothscale(raw_battery, (170, 55))
 
         self.color_cyan = (0, 220, 255)

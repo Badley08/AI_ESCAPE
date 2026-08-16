@@ -11,20 +11,20 @@ if BASE_DIR not in sys.path:
 import pygame
 pygame.init()
 
-from level1.core.game import Game as Game1
-from level1.ui.hud import HUD as HUD1
-from level2.core.game2 import Game2
-from level3.core.game3 import Game3
+from Station_Sector1.level1.core.game import Game as Game1
+from Station_Sector1.level1.ui.hud import HUD as HUD1
+from Station_Sector1.level2.core.game2 import Game2
+from Station_Sector1.level3.core.game3 import Game3
 
 # Fenêtre du jeu
 pygame.display.set_caption("AI_ESCAPE")
-app_icon = pygame.image.load('level1/assets/app_icon.png')
+app_icon = pygame.image.load('Station_Sector1/level1/assets/app_icon.png')
 pygame.display.set_icon(app_icon)
 screen = pygame.display.set_mode((1080, 720))
 
 # Curseur personnalisé
 pygame.mouse.set_visible(False)
-pointer_image = pygame.image.load('level1/assets/pointer.png').convert_alpha()
+pointer_image = pygame.image.load('Station_Sector1/level1/assets/pointer.png').convert_alpha()
 pointer_image = pygame.transform.smoothscale(pointer_image, (44, 44))
 
 # Polices de caractères pré-chargées
@@ -35,10 +35,10 @@ font_small = pygame.font.Font(None, 24)
 # -------------------------------------------------------------
 # Assets Communs / Écrans
 # -------------------------------------------------------------
-splash_image = pygame.image.load('level1/assets/splash-screen.png').convert()
+splash_image = pygame.image.load('Station_Sector1/level1/assets/splash-screen.png').convert()
 splash_image = pygame.transform.smoothscale(splash_image, (1080, 720))
 
-level_map_image = pygame.image.load('level1/assets/level.png').convert()
+level_map_image = pygame.image.load('Station_Sector1/level1/assets/level.png').convert()
 level_map_image = pygame.transform.smoothscale(level_map_image, (720, 720))
 
 level_1_rect = pygame.Rect(561, 404, 310, 281)  # Sector 1 : Test Alpha
@@ -46,12 +46,12 @@ level_2_rect = pygame.Rect(203, 276, 324, 290)  # Sector 2 : Test Beta
 level_3_rect = pygame.Rect(521, 152, 175, 218)  # Sector 3 : Test Gamma
 
 # Assets Level 1
-l1_bg = pygame.image.load('level1/assets/background.png').convert()
-l1_game_over_image = pygame.image.load('level1/assets/game_over.png').convert_alpha()
+l1_bg = pygame.image.load('Station_Sector1/level1/assets/background.png').convert()
+l1_game_over_image = pygame.image.load('Station_Sector1/level1/assets/game_over.png').convert_alpha()
 l1_game_over_image = pygame.transform.smoothscale(l1_game_over_image, (800, 250))
-l1_victory_image = pygame.image.load('level1/assets/victory.png').convert_alpha()
+l1_victory_image = pygame.image.load('Station_Sector1/level1/assets/victory.png').convert_alpha()
 l1_victory_image = pygame.transform.smoothscale(l1_victory_image, (800, 250))
-l1_explosion_image = pygame.image.load('level1/assets/explosion.png').convert_alpha()
+l1_explosion_image = pygame.image.load('Station_Sector1/level1/assets/explosion.png').convert_alpha()
 l1_explosion_image = pygame.transform.smoothscale(l1_explosion_image, (400, 400))
 
 # Surfaces pré-allouées pour le verrouillage des secteurs
@@ -111,13 +111,13 @@ def play_music(file_path, volume=0.7):
         pygame.mixer.music.stop()
         pygame.mixer.music.load(file_path)
         pygame.mixer.music.set_volume(volume)
-        pygame.mixer.music.play(-1)
+        pygame.mixer.play(-1)
         current_music_file = file_path
     except Exception:
         pass
 
 # Démarrer la musique du menu
-play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
 
 current_mode = "splash"
 locked_alert_timer = 0
@@ -141,7 +141,7 @@ while running:
     # 1. Écran d'accueil (Splash Screen)
     # ---------------------------------------------------------
     if current_mode == "splash":
-        play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+        play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
         screen.blit(splash_image, (0, 0))
         
         hint_text = font_small.render("CLICK OR PRESS SPACE TO START", True, (0, 220, 255))
@@ -162,7 +162,7 @@ while running:
     # 2. Carte de Sélection des Niveaux (Station Spatiale)
     # ---------------------------------------------------------
     elif current_mode == "level_select":
-        play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+        play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
 
         screen.fill((10, 15, 25))
         screen.blit(level_map_image, (180, 0))
@@ -226,14 +226,14 @@ while running:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if level_1_rect.collidepoint(event.pos):
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     game1 = Game1()
                     hud1 = HUD1()
                     game1.start_ticks = pygame.time.get_ticks()
                     current_mode = "level1"
                 elif level_2_rect.collidepoint(event.pos):
                     if 2 in unlocked_levels:
-                        play_music('level2/sounds/protocol_evasion.mp3', 0.7)
+                        play_music('Station_Sector1/level2/sounds/protocol_evasion.mp3', 0.7)
                         saved_l2 = saved_progress.get('level2_state', None)
                         game2 = Game2(saved_data=saved_l2)
                         current_mode = "level2"
@@ -242,7 +242,7 @@ while running:
                         locked_alert_timer = 120
                 elif level_3_rect.collidepoint(event.pos):
                     if 3 in unlocked_levels:
-                        play_music('level3/sounds/Obsidian_Gate.mp3', 0.7)
+                        play_music('Station_Sector1/level3/sounds/Obsidian_Gate.mp3', 0.7)
                         game3 = Game3(saved_data=saved_progress)
                         current_mode = "level3"
                     else:
@@ -296,14 +296,14 @@ while running:
             elif event.type == pygame.KEYDOWN:
                 game1.pressed[event.key] = True
                 if event.key == pygame.K_ESCAPE:
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     current_mode = "level_select"
                 elif event.key == pygame.K_r and game1.state in ("game_over", "victory"):
                     game1 = Game1()
                     hud1 = HUD1()
                     game1.start_ticks = pygame.time.get_ticks()
                 elif event.key == pygame.K_SPACE and game1.state == "victory":
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     current_mode = "level_select"
             elif event.type == pygame.KEYUP:
                 game1.pressed[event.key] = False
@@ -322,16 +322,16 @@ while running:
                 game2.pressed[event.key] = True
                 if event.key == pygame.K_ESCAPE:
                     game2.stop_all_sounds()
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     save_game(unlocked_levels, "level2", game2=game2)
                     current_mode = "level_select"
                 elif event.key == pygame.K_r and game2.state in ("game_over", "victory"):
                     game2.stop_all_sounds()
-                    play_music('level2/sounds/protocol_evasion.mp3', 0.7)
+                    play_music('Station_Sector1/level2/sounds/protocol_evasion.mp3', 0.7)
                     game2 = Game2()
                 elif event.key == pygame.K_SPACE and game2.state == "victory":
                     game2.stop_all_sounds()
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     unlocked_levels.add(3)
                     save_game(unlocked_levels, "level_select", saved_battery=game2.final_transferred_battery)
                     current_mode = "level_select"
@@ -352,16 +352,16 @@ while running:
                 game3.pressed[event.key] = True
                 if event.key == pygame.K_ESCAPE:
                     game3.stop_all_sounds()
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     save_game(unlocked_levels, "level3", game3=game3)
                     current_mode = "level_select"
                 elif event.key == pygame.K_r and game3.state in ("game_over", "victory"):
                     game3.stop_all_sounds()
-                    play_music('level3/sounds/Obsidian_Gate.mp3', 0.7)
+                    play_music('Station_Sector1/level3/sounds/Obsidian_Gate.mp3', 0.7)
                     game3 = Game3(saved_data=saved_progress)
                 elif event.key == pygame.K_SPACE and game3.state == "victory":
                     game3.stop_all_sounds()
-                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    play_music('Station_Sector1/level1/sounds/sleepless_corridor.mp3', 0.7)
                     unlocked_levels.add(4)
                     save_game(unlocked_levels, "level_select", saved_battery=game3.final_transferred_battery)
                     current_mode = "level_select"

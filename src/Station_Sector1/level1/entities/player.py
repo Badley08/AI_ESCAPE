@@ -14,7 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.images_right = []
         self.images_left = []
         for i in range(1, 7):
-            img = pygame.image.load(f'level1/assets/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Station_Sector1/level1/assets/{i}.png').convert_alpha()
             aspect_ratio = img.get_width() / img.get_height()
             new_width = int(80 * aspect_ratio)
             scaled = pygame.transform.smoothscale(img, (new_width, 80))

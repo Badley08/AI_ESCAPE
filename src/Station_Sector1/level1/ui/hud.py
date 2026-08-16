@@ -15,7 +15,7 @@ class HUD:
         self.color_red = (255, 50, 50)
         self.color_bg = (20, 20, 40)
         #Load the damage overlay image
-        self.damage_image = pygame.image.load('level1/assets/damage.png')
+        self.damage_image = pygame.image.load('Station_Sector1/level1/assets/damage.png')
         self.damage_image = pygame.transform.smoothscale(self.damage_image, (1080, 720))
         self.damage_image.set_alpha(160)
         #Timer to show the damage overlay

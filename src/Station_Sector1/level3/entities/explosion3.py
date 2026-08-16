@@ -8,7 +8,7 @@ class Explosion3(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        raw = pygame.image.load('level3/assets/plasma_explosion.png').convert_alpha()
+        raw = pygame.image.load('Station_Sector1/level3/assets/plasma_explosion.png').convert_alpha()
         self.frames = []
         for scale in [0.4, 0.7, 1.0, 0.9, 0.6, 0.3]:
             size = int(48 * scale)

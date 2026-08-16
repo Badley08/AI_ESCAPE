@@ -26,7 +26,7 @@ class Player3(pygame.sprite.Sprite):
         self.images_right = []
         self.images_left = []
         for name in sprite_names:
-            img = pygame.image.load(f'level3/assets/{name}').convert_alpha()
+            img = pygame.image.load(f'Station_Sector1/level3/assets/{name}').convert_alpha()
             ratio = img.get_width() / img.get_height()
             w = int(48 * ratio)
             scaled = pygame.transform.smoothscale(img, (w, 48))

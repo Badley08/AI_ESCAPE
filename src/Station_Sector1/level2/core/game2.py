@@ -1,19 +1,19 @@
 import math
 import pygame
-from level2.core.tilemap import TileMap
-from level2.entities.player2 import Player2
-from level2.entities.cleaner import CleanerRobot
-from level2.entities.fragment import DataBox
-from level2.entities.reactor import Reactor
-from level2.ui.hud2 import HUD2
+from Station_Sector1.level2.core.tilemap import TileMap
+from Station_Sector1.level2.entities.player2 import Player2
+from Station_Sector1.level2.entities.cleaner import CleanerRobot
+from Station_Sector1.level2.entities.fragment import DataBox
+from Station_Sector1.level2.entities.reactor import Reactor
+from Station_Sector1.level2.ui.hud2 import HUD2
 
 class Game2:
     """Gestionnaire principal du Niveau 2 avec calcul de bonus de batterie et rotation fluide."""
 
     def __init__(self, saved_data=None):
         # 1. Carte & Grille
-        self.tilemap = TileMap('level2/level2_grid.json')
-        self.bg_image = pygame.image.load('level2/level2_background.png').convert()
+        self.tilemap = TileMap('Station_Sector1/level2/level2_grid.json')
+        self.bg_image = pygame.image.load('Station_Sector1/level2/level2_background.png').convert()
 
         # 2. Joueur (Départ en bas au centre en zone dégagée)
         start_x = saved_data.get('player_x', 520) if saved_data else 520
@@ -83,11 +83,11 @@ class Game2:
 
         # 7. Audio
         try:
-            self.sound_collect = pygame.mixer.Sound('level2/sounds/data_collect.mp3')
+            self.sound_collect = pygame.mixer.Sound('Station_Sector1/level2/sounds/data_collect.mp3')
             self.sound_collect.set_volume(0.8)
-            self.sound_crushed = pygame.mixer.Sound('level2/sounds/robot_crushed.mp3')
+            self.sound_crushed = pygame.mixer.Sound('Station_Sector1/level2/sounds/robot_crushed.mp3')
             self.sound_crushed.set_volume(0.9)
-            self.sound_teleport = pygame.mixer.Sound('level2/sounds/teleport.mp3')
+            self.sound_teleport = pygame.mixer.Sound('Station_Sector1/level2/sounds/teleport.mp3')
             self.sound_teleport.set_volume(0.9)
         except Exception:
             self.sound_collect = None

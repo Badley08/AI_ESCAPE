@@ -131,30 +131,31 @@ Une sauvegarde persistante est générée dans `src/sauvegarde.json` :
 
 ```text
 AI_ESCAPE/
-├── README.md               # Documentation complète du projet
-├── .gitignore              # Règles d'exclusion Git
+├── README.md                   # Documentation complète du projet
+├── .gitignore                  # Règles d'exclusion Git
 └── src/
-    ├── main.py             # Point d'entrée principal (Carte spatiale & boucle globale)
-    ├── sauvegarde.json     # Données de sauvegarde persistantes
-    ├── docs/               # Lore, storyboards, prompts IA & roadmap
-    ├── level1/             # Secteur 1 : Test Alpha
-    │   ├── assets/         # Sprites, décors et coordonnées
-    │   ├── sounds/         # Musiques et effets sonores
-    │   ├── core/           # Moteur du niveau 1 (game.py)
-    │   ├── entities/       # Player, Canons, Projectiles, Explosions
-    │   └── ui/             # HUD de santé et chronomètre
-    ├── level2/             # Secteur 2 : Test Beta
-    │   ├── assets/         # Sprites de marche, réacteurs, batterie
-    │   ├── sounds/         # Ambiance sonore spatiale
-    │   ├── core/           # Moteur du niveau 2 & Tilemap de collision
-    │   ├── entities/       # RTB-O9, Véhicule Nettoyeur, Fragments, Réacteurs
-    │   └── ui/             # HUD d'énergie et alertes
-    └── level3/             # Secteur 3 : Test Gamma
-        ├── assets/         # Arène de combat, robots ennemis, blasters, terminaux
-        ├── sounds/         # Musique de combat et tirs lasers
-        ├── core/           # Moteur du niveau 3 & Tilemap de combat
-        ├── entities/       # RTB-O9 armé, Gardes & Patrouilleurs IA, Lasers, Terminaux
-        └── ui/             # HUD de combat, vagues et viseur
+    ├── main.py                 # Point d'entrée principal (Carte spatiale & boucle globale)
+    ├── sauvegarde.json         # Données de sauvegarde persistantes
+    ├── docs/                   # Lore, storyboards, prompts IA & roadmap
+    └── Station_Sector1/        # Secteur 1 de la Station (Niveaux 1 à 3)
+        ├── level1/             # Test Alpha : Esquive & Réflexes
+        │   ├── assets/         # Sprites, décors et coordonnées
+        │   ├── sounds/         # Musiques et effets sonores
+        │   ├── core/           # Moteur du niveau 1 (game.py)
+        │   ├── entities/       # Player, Canons, Projectiles, Explosions
+        │   └── ui/             # HUD de santé et chronomètre
+        ├── level2/             # Test Beta : Labyrinthe & Infiltration
+        │   ├── assets/         # Sprites de marche, réacteurs, batterie
+        │   ├── sounds/         # Ambiance sonore spatiale
+        │   ├── core/           # Moteur du niveau 2 & Tilemap de collision
+        │   ├── entities/       # RTB-O9, Véhicule Nettoyeur, Fragments, Réacteurs
+        │   └── ui/             # HUD d'énergie et alertes
+        └── level3/             # Test Gamma : Arène, Combat & Survie Furtive
+            ├── assets/         # Arène de combat, robots ennemis, blasters, terminaux
+            ├── sounds/         # Musique de combat et tirs lasers
+            ├── core/           # Moteur du niveau 3 & Tilemap de combat
+            ├── entities/       # RTB-O9 armé, Gardes & Patrouilleurs IA, Lasers, Terminaux
+            └── ui/             # HUD de combat, vagues et viseur
 ```
 
 ---

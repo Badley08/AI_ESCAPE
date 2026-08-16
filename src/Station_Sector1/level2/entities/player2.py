@@ -13,7 +13,7 @@ class Player2(pygame.sprite.Sprite):
         # Chargement des 5 frames de marche (+4px de taille)
         self.base_images = []
         for i in range(1, 6):
-            img = pygame.image.load(f'level2/{i}.png').convert_alpha()
+            img = pygame.image.load(f'Station_Sector1/level2/{i}.png').convert_alpha()
             ratio = img.get_width() / img.get_height()
             w = int(36 * ratio)
             img = pygame.transform.smoothscale(img, (w, 36))
@@ -24,7 +24,7 @@ class Player2(pygame.sprite.Sprite):
         self.image = self.base_images[0]
 
         # Boîte de données portée
-        raw_box = pygame.image.load('level2/data_fragment.png').convert_alpha()
+        raw_box = pygame.image.load('Station_Sector1/level2/data_fragment.png').convert_alpha()
         self.carried_box_img = pygame.transform.smoothscale(raw_box, (20, 20))
 
         # Position flottante

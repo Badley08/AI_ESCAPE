@@ -11,7 +11,7 @@ class Projectile(pygame.sprite.Sprite):
         #Link the projectile to its canon
         self.canon = canon
         #Load and resize the projectile image
-        self.image = pygame.image.load('level1/assets/tir.png')
+        self.image = pygame.image.load('Station_Sector1/level1/assets/tir.png')
         self.image = pygame.transform.smoothscale(self.image, (60, 60))
         self.rect = self.image.get_rect()
         #Position the projectile at the canon

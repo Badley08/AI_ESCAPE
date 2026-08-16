@@ -14,10 +14,10 @@ class Projectile(pygame.sprite.Sprite):
 
         # L'image de base pointe vers la droite (0°)
         if is_player:
-            raw = pygame.image.load('level3/assets/player_laser.png').convert_alpha()
+            raw = pygame.image.load('Station_Sector1/level3/assets/player_laser.png').convert_alpha()
             self.base_image = pygame.transform.smoothscale(raw, (28, 10))
         else:
-            raw = pygame.image.load('level3/assets/enemy_laser.png').convert_alpha()
+            raw = pygame.image.load('Station_Sector1/level3/assets/enemy_laser.png').convert_alpha()
             self.base_image = pygame.transform.smoothscale(raw, (24, 8))
 
         self.angle = angle_deg

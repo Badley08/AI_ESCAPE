@@ -12,7 +12,7 @@ class Terminal(pygame.sprite.Sprite):
         super().__init__()
         self.terminal_id = terminal_id
 
-        raw = pygame.image.load('level3/assets/generator_terminal.png').convert_alpha()
+        raw = pygame.image.load('Station_Sector1/level3/assets/generator_terminal.png').convert_alpha()
         self.base_image = pygame.transform.smoothscale(raw, (50, 50))
         self.image = self.base_image.copy()
 

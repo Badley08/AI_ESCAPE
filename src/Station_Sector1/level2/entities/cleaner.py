@@ -11,7 +11,7 @@ class CleanerRobot(pygame.sprite.Sprite):
         self.tilemap = tilemap
 
         # Image du véhicule (+8px)
-        raw_img = pygame.image.load('level2/cleaner_robot.png').convert_alpha()
+        raw_img = pygame.image.load('Station_Sector1/level2/cleaner_robot.png').convert_alpha()
         self.base_image = pygame.transform.smoothscale(raw_img, (52, 48))
         self.image = self.base_image
 
@@ -33,7 +33,7 @@ class CleanerRobot(pygame.sprite.Sprite):
         self.step_timer = 0
 
         try:
-            self.footstep_sound = pygame.mixer.Sound('level2/sounds/cleaner_footsteps.mp3')
+            self.footstep_sound = pygame.mixer.Sound('Station_Sector1/level2/sounds/cleaner_footsteps.mp3')
         except Exception:
             self.footstep_sound = None
 

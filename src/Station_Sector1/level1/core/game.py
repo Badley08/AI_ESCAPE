@@ -1,7 +1,7 @@
 import pygame
-from level1.entities.player import Player
-from level1.entities.canon import Canon
-from level1.entities.explosion import Explosion
+from Station_Sector1.level1.entities.player import Player
+from Station_Sector1.level1.entities.canon import Canon
+from Station_Sector1.level1.entities.explosion import Explosion
 
 #Create a second class that represents the game
 class Game:
@@ -25,7 +25,7 @@ class Game:
         self.explosions = pygame.sprite.Group()
         
         # Load damage sound
-        self.damage_sound = pygame.mixer.Sound('level1/sounds/boom.mp3')
+        self.damage_sound = pygame.mixer.Sound('Station_Sector1/level1/sounds/boom.mp3')
         self.damage_sound.set_volume(0.2)
 
     def get_seconds_left(self):

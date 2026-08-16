@@ -6,7 +6,7 @@ class DataBox(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         super().__init__()
-        raw_img = pygame.image.load('level2/data_fragment.png').convert_alpha()
+        raw_img = pygame.image.load('Station_Sector1/level2/data_fragment.png').convert_alpha()
         self.image = pygame.transform.smoothscale(raw_img, (32, 32))
 
         self.base_x = float(x)

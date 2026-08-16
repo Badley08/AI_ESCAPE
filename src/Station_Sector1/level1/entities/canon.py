@@ -1,6 +1,6 @@
 import pygame
 import random
-from level1.entities.projectiles import Projectile
+from Station_Sector1.level1.entities.projectiles import Projectile
 
 
 #Create the class for the canon
@@ -8,7 +8,7 @@ class Canon(pygame.sprite.Sprite):
 
     def __init__(self, x, y, initial_cooldown=0):
         super().__init__()
-        self.image = pygame.image.load('level1/assets/canon.png')
+        self.image = pygame.image.load('Station_Sector1/level1/assets/canon.png')
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -17,7 +17,7 @@ class Canon(pygame.sprite.Sprite):
         
         self.all_projectiles = pygame.sprite.Group()
         self.shoot_cooldown = initial_cooldown
-        self.shoot_sound = pygame.mixer.Sound('level1/sounds/canon_sound.mp3')
+        self.shoot_sound = pygame.mixer.Sound('Station_Sector1/level1/sounds/canon_sound.mp3')
         
     def shoot(self):
         self.shoot_sound.play()

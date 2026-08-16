@@ -5,7 +5,7 @@ from collections import deque
 class TileMap:
     """Gestionnaire de carte avec collisions strictes et pathfinding BFS complet garanti sans traversée de murs."""
 
-    def __init__(self, json_path='level2/level2_grid.json'):
+    def __init__(self, json_path='Station_Sector1/level2/level2_grid.json'):
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 

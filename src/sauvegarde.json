@@ -5,8 +5,11 @@
     3,
     4
   ],
-  "last_mode": "level_select",
+  "last_mode": "level3",
   "saved_battery": 100.0,
   "level2_state": null,
-  "level3_state": null
+  "level3_state": {
+    "player_battery": 93.1,
+    "current_wave": 1
+  }
 }
