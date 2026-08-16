@@ -4,36 +4,6 @@
     2
   ],
   "last_mode": "level2",
-  "level2_state": {
-    "player_x": 442,
-    "player_y": 384,
-    "player_battery": 93.3,
-    "carried_cores": 1,
-    "cleaner_x": 424,
-    "cleaner_y": 392,
-    "reactor_center_cores": 0,
-    "reactor_right_cores": 0,
-    "remaining_boxes": [
-      [
-        160,
-        110
-      ],
-      [
-        780,
-        140
-      ],
-      [
-        130,
-        390
-      ],
-      [
-        140,
-        620
-      ],
-      [
-        760,
-        840
-      ]
-    ]
-  }
+  "saved_battery": 100.0,
+  "level2_state": null
 }

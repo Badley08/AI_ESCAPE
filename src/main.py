@@ -64,13 +64,15 @@ def load_save():
                 return data
         except Exception:
             pass
-    return {'unlocked_levels': [1], 'current_mode': 'splash', 'level2_state': None}
+    return {'unlocked_levels': [1], 'current_mode': 'splash', 'saved_battery': 100.0, 'level2_state': None}
 
-def save_game(unlocked_levels, current_mode, game2=None):
+def save_game(unlocked_levels, current_mode, game2=None, saved_battery=None):
+    current_battery = saved_battery if saved_battery is not None else saved_progress.get('saved_battery', 100.0)
     save_data = {
         'unlocked_levels': list(unlocked_levels),
         'last_mode': current_mode,
-        'level2_state': game2.get_save_state() if (game2 and current_mode == 'level2') else None
+        'saved_battery': current_battery,
+        'level2_state': game2.get_save_state() if (game2 and current_mode == 'level2' and game2.state == 'playing') else None
     }
     try:
         with open(SAVE_FILE, 'w', encoding='utf-8') as f:
@@ -292,7 +294,8 @@ while running:
                 elif event.key == pygame.K_SPACE and game2.state == "victory":
                     game2.stop_all_sounds()
                     play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
-                    save_game(unlocked_levels, "level_select")
+                    unlocked_levels.add(3)
+                    save_game(unlocked_levels, "level_select", saved_battery=game2.final_transferred_battery)
                     current_mode = "level_select"
             elif event.type == pygame.KEYUP:
                 game2.pressed[event.key] = False
