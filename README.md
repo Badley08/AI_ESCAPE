@@ -1,32 +1,43 @@
-# 🚀 AI_ESCAPE
+# AI_ESCAPE
 
-Jeu d'action, d'infiltration et d'énigmes 2D développé avec **Python** et **Pygame**.
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Version" />
+  <img src="https://img.shields.io/badge/Pygame-2.6.1-green?style=for-the-badge&logo=pygame&logoColor=white" alt="Pygame" />
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?style=for-the-badge" alt="Platform" />
+</p>
 
-Incarnez **RTB-O9**, un robot doté d'une intelligence artificielle avancée créé dans les laboratoires secrets d'une station spatiale. Confronté à des tests d'adaptation impitoyables orchestrés par l'IA centrale ("PI"), vous devez vous adapter, survivre et développer votre libre arbitre pour vous échapper !
+Jeu d'action, d'infiltration et de survie 2D développé avec Python et Pygame.
+
+Incarnez **RTB-O9**, un robot doté d'une intelligence artificielle avancée créé dans les laboratoires secrets d'une station spatiale. Confronté à des tests d'adaptation impitoyables orchestrés par l'IA centrale ("PI"), vous devez vous adapter, survivre et développer votre libre arbitre pour vous échapper.
 
 ---
 
-## 📋 Prérequis
+## Prérequis
 
-- **Python 3.10+** (Testé et 100% compatible avec **Python 3.11** sous Linux et **Python 3.13** sous Windows)
+- **Python 3.10+** (Compatible avec Python 3.11 sous Linux et Python 3.13 sous Windows)
 - **Pygame 2.x**
 
 ---
 
-## ⚙️ Pourquoi créer un Environnement Virtuel (`env`) ?
+## Pourquoi créer un Environnement Virtuel (env) ?
 
-Avant d'installer `pygame`, il est **fortement recommandé** (et souvent obligatoire sous Linux) de créer un environnement virtuel dédié au projet :
+Avant d'installer `pygame`, il est fortement recommandé (et obligatoire sur les distributions Linux récentes) de créer un environnement virtuel dédié au projet pour les raisons suivantes :
 
-1. **🛡️ Protection du système (PEP 668 sous Linux)** :
-   Sur les distributions Linux récentes (Debian 12+, Ubuntu 23.04+, Fedora, Linux Mint), le gestionnaire de paquets Python système est protégé (`externally-managed-environment`). Installer des paquets avec `pip install` globalement peut corrompre les outils du système d'exploitation. L'environnement virtuel isole l'installation sans risque.
-2. **📦 Isolation des dépendances** :
-   Évite les conflits de versions entre les bibliothèques d'autres projets Python présents sur votre machine.
-3. **🔄 Reproductibilité Windows & Linux** :
-   Garantit que le jeu tourne exactement avec les mêmes versions de dépendances sur tous vos systèmes d'exploitation.
+> [!IMPORTANT]
+> **1. Protection du système d'exploitation (PEP 668 sous Linux)**  
+> Sur les distributions Linux modernes (Debian 12+, Ubuntu 23.04+, Fedora, Linux Mint), le gestionnaire de paquets Python système est protégé (`externally-managed-environment`). Exécuter `pip install` globalement peut corrompre les paquets gérés par `apt` ou le système d'exploitation. L'environnement virtuel fournit un bac à sable sécurisé et totalement isolé.
+
+> [!NOTE]
+> **2. Isolation des dépendances**  
+> Évite les conflits de versions entre les différentes bibliothèques de vos projets Python sur une même machine.
+
+> [!NOTE]
+> **3. Reproductibilité multiplateforme**  
+> Garantit un comportement identique du jeu et des bibliothèques associées sur Windows et Linux.
 
 ---
 
-## 🛠️ Installation & Démarrage
+## Installation et Démarrage
 
 ### 1. Cloner le dépôt
 
@@ -37,7 +48,7 @@ cd AI_ESCAPE
 
 ### 2. Créer et activer l'environnement virtuel
 
-#### 🪟 Sur Windows (PowerShell ou Invite de commandes) :
+#### Sur Windows (PowerShell ou Invite de commandes) :
 ```powershell
 # Création de l'environnement virtuel
 python -m venv env
@@ -49,9 +60,9 @@ python -m venv env
 pip install pygame
 ```
 
-#### 🐧 Sur Linux / macOS (Terminal Bash ou Zsh) :
+#### Sur Linux / macOS (Terminal Bash ou Zsh) :
 ```bash
-# Si venv n'est pas installé sur votre distribution :
+# Si venv n'est pas encore installé sur votre système :
 # sudo apt install python3-venv python3-pip
 
 # Création de l'environnement virtuel
@@ -83,7 +94,7 @@ python3 main.py      # Linux
 
 ---
 
-## 🎮 Niveaux de Jeu
+## Niveaux de Jeu
 
 | Niveau | Nom de Code | Type de Gameplay | Objectif |
 | :--- | :--- | :--- | :--- |
@@ -93,7 +104,7 @@ python3 main.py      # Linux
 
 ---
 
-## 🕹️ Commandes du Jeu
+## Commandes du Jeu
 
 | Action | Touche(s) |
 | :--- | :--- |
@@ -107,16 +118,16 @@ python3 main.py      # Linux
 
 ---
 
-## 💾 Système de Sauvegarde Automatique
+## Système de Sauvegarde Automatique
 
 Une sauvegarde persistante est générée dans `src/sauvegarde.json` :
-- Conserve les **secteurs déverrouillés**.
-- Transfère la **batterie restante** d'un niveau à l'autre avec un **bonus de performance** basé sur votre efficacité.
+- Conserve les secteurs déverrouillés.
+- Transfère la batterie restante d'un niveau à l'autre avec un bonus de performance basé sur votre efficacité.
 - Permet de reprendre votre partie là où vous vous étiez arrêté.
 
 ---
 
-## 📂 Structure du Projet
+## Structure du Projet
 
 ```text
 AI_ESCAPE/
@@ -148,6 +159,6 @@ AI_ESCAPE/
 
 ---
 
-## 📄 Licence
+## Licence
 
-Projet développé avec passion. Tous droits réservés.
+Projet sous licence libre d'utilisation dans le cadre du développement du jeu. Tous droits réservés.
