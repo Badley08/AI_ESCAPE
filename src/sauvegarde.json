@@ -1,0 +1,39 @@
+{
+  "unlocked_levels": [
+    1,
+    2
+  ],
+  "last_mode": "level2",
+  "level2_state": {
+    "player_x": 368,
+    "player_y": 933,
+    "player_battery": 95.4,
+    "carried_cores": 1,
+    "cleaner_x": 376,
+    "cleaner_y": 909,
+    "reactor_center_cores": 0,
+    "reactor_right_cores": 0,
+    "remaining_boxes": [
+      [
+        160,
+        110
+      ],
+      [
+        780,
+        140
+      ],
+      [
+        130,
+        390
+      ],
+      [
+        140,
+        620
+      ],
+      [
+        760,
+        840
+      ]
+    ]
+  }
+}
