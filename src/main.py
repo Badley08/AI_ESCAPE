@@ -1,12 +1,19 @@
 import os
+import sys
 import json
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+# Résolution des chemins et modules compatible Windows & Linux
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE_DIR)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import pygame
+pygame.init()
+
 from level1.core.game import Game as Game1
 from level1.ui.hud import HUD as HUD1
 from level2.core.game2 import Game2
-
-pygame.init()
 
 # Fenêtre du jeu
 pygame.display.set_caption("AI_ESCAPE")
