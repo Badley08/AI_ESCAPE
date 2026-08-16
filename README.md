@@ -8,7 +8,7 @@
 
 Jeu d'action, d'infiltration et de survie 2D développé avec Python et Pygame.
 
-Incarnez **RTB-O9**, un robot doté d'une intelligence artificielle avancée créé dans les laboratoires secrets d'une station spatiale. Confronté à des tests d'adaptation impitoyables orchestrés par l'IA centrale ("PI"), vous devez vous adapter, survivre et développer votre libre arbitre pour vous échapper.
+Incarnez **RTB-O9**, un robot doté d'une intelligence artificielle avancée créé dans les laboratoires secrets d'une station spatiale. Confronté à des tests d'adaptation impitoyables orchestrés par le **PI** (*Principal Investigator* — le chercheur principal humain dirigeant les expériences), vous devez vous adapter, survivre et développer votre libre arbitre pour vous échapper.
 
 ---
 

@@ -1,9 +1,9 @@
 # MAIN STORY
-Des robots ia ont été créés dans un laboratoire secret, personne ne sait dans quel but. Ils ont été dotés d'une intelligence artificielle avancée, capable d'apprendre et de s'adapter. 
+Des robots IA ont été créés dans un laboratoire secret d'une station spatiale sous la supervision du **PI** (*Principal Investigator*, le chercheur principal humain en charge du programme d'évaluation). Ils ont été dotés d'une intelligence artificielle avancée, capable d'apprendre et de s'adapter. 
 
-mais, si ils n'arrivent pas à s'adapter et à apprendre, ils seront détruits.
-Vous incarnez un de ces robots, et vous devez tout faire pour survivre. 
-et le nom de ce robot est "RTB-O9".
+Mais si les prototypes n'arrivent pas à s'adapter et à réussir les tests dictés par le PI, ils sont impitoyablement détruits et recyclés.
+Vous incarnez l'un de ces robots, et vous devez tout faire pour survivre.
+Son nom de code est **"RTB-O9"**.
 
 
 # GAMEPLAY
