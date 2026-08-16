@@ -1,223 +1,273 @@
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import pygame
-from level1.core.game import Game
-from level1.ui.hud import HUD
+from level1.core.game import Game as Game1
+from level1.ui.hud import HUD as HUD1
+from level2.core.game2 import Game2
+
 pygame.init()
 
-
-#Game window
+# Fenêtre du jeu
 pygame.display.set_caption("AI_ESCAPE")
 app_icon = pygame.image.load('level1/assets/app_icon.png')
 pygame.display.set_icon(app_icon)
 screen = pygame.display.set_mode((1080, 720))
 
-#Background
-background = pygame.image.load('level1/assets/background.png')
-
-#Load the game over and victory images
-game_over_image = pygame.image.load('level1/assets/game_over.png')
-game_over_image = pygame.transform.smoothscale(game_over_image, (800, 250))
-victory_image = pygame.image.load('level1/assets/victory.png')
-victory_image = pygame.transform.smoothscale(victory_image, (800, 250))
-#Load the explosion image for game over screen
-explosion_image = pygame.image.load('level1/assets/explosion.png')
-explosion_image = pygame.transform.smoothscale(explosion_image, (400, 400))
-
-#load our player
-game = Game()
-
-#Create the HUD
-hud = HUD()
-
-#Clock for FPS cap
-clock = pygame.time.Clock()
-
-# Hide default cursor and load custom pointer
+# Curseur personnalisé
 pygame.mouse.set_visible(False)
 pointer_image = pygame.image.load('level1/assets/pointer.png')
-# Since it is large (755KB), scale it down to a typical cursor size
-pointer_image = pygame.transform.smoothscale(pointer_image, (48, 48))
+pointer_image = pygame.transform.smoothscale(pointer_image, (44, 44))
 
-running = True
+# Police de caractères
+font_large = pygame.font.Font(None, 48)
+font_medium = pygame.font.Font(None, 32)
+font_small = pygame.font.Font(None, 24)
 
-# Splash Screen logic
+# -------------------------------------------------------------
+# Assets Communs / Écrans
+# -------------------------------------------------------------
 splash_image = pygame.image.load('level1/assets/splash-screen.png')
 splash_image = pygame.transform.smoothscale(splash_image, (1080, 720))
 
-pygame.mixer.music.load('level1/sounds/sleepless_corridor.mp3')
-pygame.mixer.music.set_volume(1.0)
-pygame.mixer.music.play(-1)
+level_map_image = pygame.image.load('level1/assets/level.png')
+level_map_image = pygame.transform.smoothscale(level_map_image, (720, 720))
 
-showing_splash = True
-while showing_splash and running:
-    clock.tick(60)
-    
-    # Loop music exactly at 26 seconds (26000 ms) to avoid gap
-    if pygame.mixer.music.get_pos() >= 26000:
+level_1_rect = pygame.Rect(561, 404, 310, 281)  # Sector 1 : Test Alpha
+level_2_rect = pygame.Rect(203, 276, 324, 290)  # Sector 2 : Test Beta
+
+# Assets Level 1
+l1_bg = pygame.image.load('level1/assets/background.png')
+l1_game_over_image = pygame.image.load('level1/assets/game_over.png')
+l1_game_over_image = pygame.transform.smoothscale(l1_game_over_image, (800, 250))
+l1_victory_image = pygame.image.load('level1/assets/victory.png')
+l1_victory_image = pygame.transform.smoothscale(l1_victory_image, (800, 250))
+l1_explosion_image = pygame.image.load('level1/assets/explosion.png')
+l1_explosion_image = pygame.transform.smoothscale(l1_explosion_image, (400, 400))
+
+# Horloge FPS
+clock = pygame.time.Clock()
+
+# -------------------------------------------------------------
+# Gestionnaire Audio Centralisé (Anti-Superposition)
+# -------------------------------------------------------------
+current_music_file = None
+
+def play_music(file_path, volume=0.7):
+    global current_music_file
+    if current_music_file == file_path and pygame.mixer.music.get_busy():
+        return
+    try:
+        pygame.mixer.stop()  # Arrête tous les effets sonores en cours
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load(file_path)
+        pygame.mixer.music.set_volume(volume)
         pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(1.0)
-        
-    screen.blit(splash_image, (0, 0))
-    
-    # Draw custom pointer
-    mouse_pos = pygame.mouse.get_pos()
-    screen.blit(pointer_image, mouse_pos)
-    
-    pygame.display.flip()
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            showing_splash = False
-            running = False
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                showing_splash = False
-            elif event.key == pygame.K_ESCAPE:
-                showing_splash = False
-                running = False
-                pygame.quit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                showing_splash = False
+        current_music_file = file_path
+    except Exception:
+        pass
 
-# Level Selection logic
-level_image = pygame.image.load('level1/assets/level.png')
-level_image = pygame.transform.smoothscale(level_image, (720, 720))
-level_1_rect = pygame.Rect(561, 404, 310, 281)
+# -------------------------------------------------------------
+# État Global du Jeu
+# -------------------------------------------------------------
+current_mode = "splash"  # "splash", "level_select", "level1", "level2"
+unlocked_levels = {1}
+locked_alert_timer = 0
+locked_alert_msg = ""
 
-selecting_level = True
-while selecting_level and running:
-    clock.tick(60)
-    
-    if pygame.mixer.music.get_pos() >= 26000:
-        pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(1.0)
-        
-    screen.fill((0, 0, 0))
-    screen.blit(level_image, (180, 0))
-    
-    # Draw custom pointer
-    mouse_pos = pygame.mouse.get_pos()
-    screen.blit(pointer_image, mouse_pos)
-    
-    pygame.display.flip()
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            selecting_level = False
-            running = False
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            selecting_level = False
-            running = False
-            pygame.quit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1: # Left click
-                if level_1_rect.collidepoint(event.pos):
-                    selecting_level = False
-                    pygame.mixer.music.set_volume(0.7)
+game1 = None
+hud1 = None
+game2 = None
 
-if running:
-    # Reset timer because time elapsed during the splash screen
-    game.start_ticks = pygame.time.get_ticks()
+# Lancer la musique du menu au démarrage
+play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
 
-#Game loop
+running = True
+
+# =============================================================
+# Boucle Principale
+# =============================================================
 while running:
-
-    #Cap the framerate at 60 FPS
     clock.tick(60)
-
-    # Loop music exactly at 26 seconds (26000 ms) to avoid gap
-    if pygame.mixer.music.get_pos() >= 26000:
-        pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(0.7)
-
-    #Draw the background
-    screen.blit(background, (0,-200))
-
-    #If the game is still playing
-    if game.state == "playing":
-
-        #Add the player image on the screen
-        screen.blit(game.player.image, game.player.rect)
-
-        #Draw all canons
-        game.canons.draw(screen)
-        
-        # Draw projectiles
-        for canon in game.canons:
-            canon.all_projectiles.draw(screen)
-
-        #Update the game logic (collisions, timer, shooting)
-        game.update(hud)
-
-        #Draw the HUD (health bar, timer, intro text, damage flash)
-        hud.draw(screen, game.player, game.get_seconds_left())
-
-    #If the game is over (player died)
-    elif game.state == "game_over":
-        #Draw the explosion at the player position
-        screen.blit(explosion_image, (game.player.rect.centerx - 200, game.player.rect.centery - 200))
-        #Draw the game over image centered on screen
-        game_over_rect = game_over_image.get_rect(centerx=540, centery=360)
-        screen.blit(game_over_image, game_over_rect)
-        #Draw the restart instruction
-        font_small = pygame.font.Font(None, 36)
-        restart_text = font_small.render("Press R to restart or ESC to quit", True, (0, 150, 255))
-        restart_rect = restart_text.get_rect(centerx=540, y=520)
-        screen.blit(restart_text, restart_rect)
-
-    #If the player survived 60 seconds (victory)
-    elif game.state == "victory":
-        #Draw the victory image centered on screen
-        victory_rect = victory_image.get_rect(centerx=540, centery=360)
-        screen.blit(victory_image, victory_rect)
-        #Draw the restart instruction
-        font_small = pygame.font.Font(None, 36)
-        restart_text = font_small.render("Press R to restart or ESC to quit", True, (0, 150, 255))
-        restart_rect = restart_text.get_rect(centerx=540, y=520)
-        screen.blit(restart_text, restart_rect)
-
-    # Draw the custom pointer
     mouse_pos = pygame.mouse.get_pos()
-    screen.blit(pointer_image, mouse_pos)
 
-    #Update the display
+    # ---------------------------------------------------------
+    # 1. Écran d'accueil (Splash Screen)
+    # ---------------------------------------------------------
+    if current_mode == "splash":
+        play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+        screen.blit(splash_image, (0, 0))
+        
+        hint_text = font_small.render("CLICK OR PRESS SPACE TO START", True, (0, 220, 255))
+        screen.blit(hint_text, hint_text.get_rect(centerx=540, y=675))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key in (pygame.K_SPACE, pygame.K_RETURN):
+                    current_mode = "level_select"
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                current_mode = "level_select"
+
+    # ---------------------------------------------------------
+    # 2. Carte de Sélection des Niveaux (Station Spatiale)
+    # ---------------------------------------------------------
+    elif current_mode == "level_select":
+        play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+
+        screen.fill((10, 15, 25))
+        screen.blit(level_map_image, (180, 0))
+
+        title_surf = font_large.render("STATION ORBITALE - SÉLECTION DU SECTEUR", True, (0, 220, 255))
+        screen.blit(title_surf, title_surf.get_rect(centerx=540, y=25))
+
+        hover_l1 = level_1_rect.collidepoint(mouse_pos)
+        hover_l2 = level_2_rect.collidepoint(mouse_pos)
+
+        # Surbrillance Secteur 1
+        if hover_l1:
+            pygame.draw.rect(screen, (0, 255, 150), level_1_rect, 3, border_radius=12)
+            lbl = font_medium.render("SECTEUR 1 : TEST ALPHA (CLIQUEZ POUR ENTRER)", True, (0, 255, 150))
+            screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
+
+        # Secteur 2 (Verrouillé ou Débloqué)
+        if 2 not in unlocked_levels:
+            lock_overlay = pygame.Surface((level_2_rect.width, level_2_rect.height), pygame.SRCALPHA)
+            lock_overlay.fill((20, 20, 30, 160))
+            screen.blit(lock_overlay, level_2_rect.topleft)
+            pygame.draw.rect(screen, (255, 60, 60), level_2_rect, 2, border_radius=12)
+            
+            badge = font_small.render("🔒 SECTEUR 2 VERROUILLÉ", True, (255, 80, 80))
+            screen.blit(badge, badge.get_rect(center=level_2_rect.center))
+
+            if hover_l2:
+                lbl = font_medium.render("🔒 SECTEUR 2 BLOQUÉ : Complétez le Secteur 1 d'abord !", True, (255, 80, 80))
+                screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
+        else:
+            if hover_l2:
+                pygame.draw.rect(screen, (0, 255, 255), level_2_rect, 3, border_radius=12)
+                lbl = font_medium.render("SECTEUR 2 : TEST BETA (CLIQUEZ POUR ENTRER)", True, (0, 255, 255))
+                screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
+            else:
+                pygame.draw.rect(screen, (50, 200, 255), level_2_rect, 1, border_radius=12)
+
+        if locked_alert_timer > 0:
+            locked_alert_timer -= 1
+            alert_surf = font_medium.render(locked_alert_msg, True, (255, 50, 50))
+            screen.blit(alert_surf, alert_surf.get_rect(centerx=540, y=640))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if level_1_rect.collidepoint(event.pos):
+                    # Démarrer Niveau 1
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    game1 = Game1()
+                    hud1 = HUD1()
+                    game1.start_ticks = pygame.time.get_ticks()
+                    current_mode = "level1"
+                elif level_2_rect.collidepoint(event.pos):
+                    if 2 in unlocked_levels:
+                        # Démarrer Niveau 2
+                        play_music('level2/sounds/protocol_evasion.mp3', 0.7)
+                        game2 = Game2()
+                        current_mode = "level2"
+                    else:
+                        locked_alert_msg = "Accès Refusé : Terminez le Secteur 1 pour déverrouiller le Secteur 2 !"
+                        locked_alert_timer = 120
+
+    # ---------------------------------------------------------
+    # 3. Gameplay NIVEAU 1 (Test Alpha)
+    # ---------------------------------------------------------
+    elif current_mode == "level1":
+        screen.blit(l1_bg, (0, -200))
+
+        if game1.state == "playing":
+            screen.blit(game1.player.image, game1.player.rect)
+            game1.canons.draw(screen)
+            for canon in game1.canons:
+                canon.all_projectiles.draw(screen)
+
+            game1.update(hud1)
+            hud1.draw(screen, game1.player, game1.get_seconds_left())
+
+            if (game1.pressed.get(pygame.K_RIGHT) or game1.pressed.get(pygame.K_d)) and game1.player.rect.x < 980:
+                game1.player.move_right()
+            if (game1.pressed.get(pygame.K_LEFT) or game1.pressed.get(pygame.K_a)) and game1.player.rect.x > 0:
+                game1.player.move_left()
+            if (game1.pressed.get(pygame.K_UP) or game1.pressed.get(pygame.K_w)) and game1.player.rect.y > 420:
+                game1.player.move_up()
+            if (game1.pressed.get(pygame.K_DOWN) or game1.pressed.get(pygame.K_s)) and game1.player.rect.y < 584:
+                game1.player.move_down()
+
+        elif game1.state == "game_over":
+            screen.blit(l1_explosion_image, (game1.player.rect.centerx - 200, game1.player.rect.centery - 200))
+            game_over_rect = l1_game_over_image.get_rect(centerx=540, centery=360)
+            screen.blit(l1_game_over_image, game_over_rect)
+
+            restart_text = font_medium.render("Press R to restart | ESC for Sector Map", True, (0, 150, 255))
+            screen.blit(restart_text, restart_text.get_rect(centerx=540, y=520))
+
+        elif game1.state == "victory":
+            unlocked_levels.add(2)
+            screen.blit(l1_victory_image, l1_victory_image.get_rect(centerx=540, centery=320))
+            v_text1 = font_large.render("SECTEUR 2 DÉVERROUILLÉ !", True, (50, 255, 120))
+            v_text2 = font_medium.render("Appuyez sur ESPACE pour passer à la Station et au Niveau 2", True, (0, 220, 255))
+            screen.blit(v_text1, v_text1.get_rect(centerx=540, centery=430))
+            screen.blit(v_text2, v_text2.get_rect(centerx=540, centery=480))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                game1.pressed[event.key] = True
+                if event.key == pygame.K_ESCAPE:
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    current_mode = "level_select"
+                elif event.key == pygame.K_r and game1.state in ("game_over", "victory"):
+                    game1 = Game1()
+                    hud1 = HUD1()
+                    game1.start_ticks = pygame.time.get_ticks()
+                elif event.key == pygame.K_SPACE and game1.state == "victory":
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    current_mode = "level_select"
+            elif event.type == pygame.KEYUP:
+                game1.pressed[event.key] = False
+
+    # ---------------------------------------------------------
+    # 4. Gameplay NIVEAU 2 (Test Beta)
+    # ---------------------------------------------------------
+    elif current_mode == "level2":
+        game2.update()
+        game2.render(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                game2.pressed[event.key] = True
+                if event.key == pygame.K_ESCAPE:
+                    game2.stop_all_sounds()
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    current_mode = "level_select"
+                elif event.key == pygame.K_r and game2.state in ("game_over", "victory"):
+                    game2.stop_all_sounds()
+                    play_music('level2/sounds/protocol_evasion.mp3', 0.7)
+                    game2 = Game2()
+                elif event.key == pygame.K_SPACE and game2.state == "victory":
+                    game2.stop_all_sounds()
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    current_mode = "level_select"
+            elif event.type == pygame.KEYUP:
+                game2.pressed[event.key] = False
+
+    # Curseur Personnalisé
+    screen.blit(pointer_image, mouse_pos)
     pygame.display.flip()
 
-    #If the player closes the window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-            print("Quitting the game")
-        #Define that the pressed keys are true
-        elif event.type == pygame.KEYDOWN:
-            game.pressed[event.key] = True
-
-            #If the player presses ESC, quit the game
-            if event.key == pygame.K_ESCAPE:
-                running = False
-                pygame.quit()
-
-            #If the player presses R during game over or victory, restart
-            if event.key == pygame.K_r and game.state in ("game_over", "victory"):
-                game = Game()
-                hud = HUD()
-
-        #Define that the released keys are false
-        elif event.type == pygame.KEYUP:
-            game.pressed[event.key] = False
-
-    if running and game.state == "playing":
-        #Verify if the player wants to move
-        if (game.pressed.get(pygame.K_RIGHT) or game.pressed.get(pygame.K_d)) and game.player.rect.x < 980:
-            game.player.move_right()
-        if (game.pressed.get(pygame.K_LEFT) or game.pressed.get(pygame.K_a)) and game.player.rect.x > 0:
-            game.player.move_left()
-        if (game.pressed.get(pygame.K_UP) or game.pressed.get(pygame.K_w)) and game.player.rect.y > 420:
-            game.player.move_up()
-        if (game.pressed.get(pygame.K_DOWN) or game.pressed.get(pygame.K_s)) and game.player.rect.y < 584:
-            game.player.move_down()
+pygame.quit()
