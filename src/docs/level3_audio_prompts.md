@@ -8,7 +8,7 @@
 
 Un thème cyberpunk sombre et mélancolique avec des basses synthétiques lourdes et des percussions industrielles percutantes, évoquant la tragédie du combat entre "frères" robots.
 
-**Nom officiel du morceau :** `fractured_kinship.mp3` *(Fraternité Brisée)*
+**Nom officiel du morceau :** `obsidian_gate.mp3` *(Porte d'Obsidienne)*
 
 **Prompt IA (pour Suno / Udio) :**
 > `Instrumental, dark cinematic cyberpunk, heavy industrial synthwave, 125 BPM, melancholic epic strings mixed with aggressive analog bass synth, slow intense combat drums, tragic sci-fi battle theme, emotional and high-adrenaline, video game soundtrack, no vocals`
