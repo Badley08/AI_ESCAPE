@@ -3,7 +3,7 @@ import pygame
 
 
 class Player3(pygame.sprite.Sprite):
-    """RTB-O9 armé d'un blaster plasma — vise avec la souris, tire au clic gauche."""
+    """RTB-O9 armé — animation de marche fluide, rotation précise vers la visée, tir Clic Gauche ou ESPACE."""
 
     SPEED = 3.8
 
@@ -11,7 +11,7 @@ class Player3(pygame.sprite.Sprite):
         super().__init__()
         self.tilemap = tilemap
 
-        # Chargement des 7 frames d'animation
+        # Chargement et mise à l'échelle des 7 frames
         sprite_names = [
             'rtb_o9_sprite_01_weapon_lowered.png',
             'rtb_o9_sprite_02_walk_left.png',
@@ -29,14 +29,20 @@ class Player3(pygame.sprite.Sprite):
             img = pygame.transform.smoothscale(img, (w, 40))
             self.base_images.append(img)
 
-        # Frames de marche : 0, 1, 2, 5, 6 ; Frames de tir : 3, 4
-        self.walk_frames = [self.base_images[0], self.base_images[1],
-                            self.base_images[5], self.base_images[2],
-                            self.base_images[6]]
+        # Séquence de marche continue
+        self.walk_frames = [
+            self.base_images[0],
+            self.base_images[1],
+            self.base_images[5],
+            self.base_images[2],
+            self.base_images[6]
+        ]
         self.aim_frame = self.base_images[3]
 
         self.current_frame = 0.0
-        self.aim_angle = 0.0
+        # Angle de rotation (0° = vers le bas, 90° = droite, 180° = haut, -90° = gauche)
+        self.rot_angle = 0.0
+        self.fire_angle = 0.0  # Angle de lancement du projectile (0° = droite, 90° = haut)
         self.image = self.base_images[0]
 
         self.pos_x = float(x)
@@ -74,7 +80,7 @@ class Player3(pygame.sprite.Sprite):
         if dx != 0 or dy != 0:
             self.is_moving = True
 
-            # Résolution X
+            # Déplacement X avec résolution de collision
             self.pos_x += dx
             self.hitbox.centerx = round(self.pos_x)
             for w in self.tilemap.get_colliding_walls(self.hitbox):
@@ -85,7 +91,7 @@ class Player3(pygame.sprite.Sprite):
                         self.hitbox.left = w.right
                     self.pos_x = float(self.hitbox.centerx)
 
-            # Résolution Y
+            # Déplacement Y avec résolution de collision
             self.pos_y += dy
             self.hitbox.centery = round(self.pos_y)
             for w in self.tilemap.get_colliding_walls(self.hitbox):
@@ -103,39 +109,41 @@ class Player3(pygame.sprite.Sprite):
             self.is_moving = False
 
     def update_aim(self, mouse_world_x, mouse_world_y):
-        """Met à jour l'angle de visée vers la position de la souris en coordonnées monde."""
+        """Oriente le corps, le casque et l'arme de RTB-O9 vers le curseur."""
         dx = mouse_world_x - self.pos_x
         dy = mouse_world_y - self.pos_y
-        self.aim_angle = math.degrees(math.atan2(-dy, dx))
+        # Angle balistique pour les lasers (0° = droite, 90° = haut)
+        self.fire_angle = math.degrees(math.atan2(-dy, dx))
+        # Angle de rotation du sprite (car le sprite de base regarde vers le bas = vecteur (0, 1))
+        self.rot_angle = -math.degrees(math.atan2(dy, dx)) + 90.0
 
     def try_shoot(self):
-        """Retourne True si un tir est possible (cooldown écoulé)."""
+        """Déclenche un tir plasma si le cooldown est écoulé."""
         if self.shoot_cooldown <= 0:
-            self.shoot_cooldown = 15  # ~4 tirs/sec à 60 FPS
+            self.shoot_cooldown = 14  # ~4.3 tirs par seconde à 60 FPS
             self.is_shooting = True
             return True
         return False
 
     def update(self):
-        # Cooldown de tir
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-        # Animation
+        # Choix de la frame d'animation
         if self.is_shooting:
-            base = self.aim_frame
+            base_frame = self.aim_frame
             self.is_shooting = False
         elif self.is_moving:
-            self.current_frame += 0.16
+            self.current_frame += 0.18
             if self.current_frame >= len(self.walk_frames):
                 self.current_frame = 0.0
-            base = self.walk_frames[int(self.current_frame)]
+            base_frame = self.walk_frames[int(self.current_frame)]
         else:
             self.current_frame = 0.0
-            base = self.walk_frames[0]
+            base_frame = self.walk_frames[0]
 
-        # Rotation vers la visée
-        self.image = pygame.transform.rotate(base, self.aim_angle)
+        # Rotation précise vers la cible visée
+        self.image = pygame.transform.rotate(base_frame, self.rot_angle)
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
         # Décharge passive
@@ -144,7 +152,6 @@ class Player3(pygame.sprite.Sprite):
             self.battery = 0.0
 
     def take_damage(self, amount):
-        """Dégâts de batterie causés par un laser ennemi."""
         self.battery -= amount
         if self.battery < 0:
             self.battery = 0.0
