@@ -59,6 +59,11 @@ while showing_splash and running:
         pygame.mixer.music.set_volume(1.0)
         
     screen.blit(splash_image, (0, 0))
+    
+    # Draw custom pointer
+    mouse_pos = pygame.mouse.get_pos()
+    screen.blit(pointer_image, mouse_pos)
+    
     pygame.display.flip()
     
     for event in pygame.event.get():
@@ -92,6 +97,11 @@ while selecting_level and running:
         
     screen.fill((0, 0, 0))
     screen.blit(level_image, (180, 0))
+    
+    # Draw custom pointer
+    mouse_pos = pygame.mouse.get_pos()
+    screen.blit(pointer_image, mouse_pos)
+    
     pygame.display.flip()
     
     for event in pygame.event.get():
