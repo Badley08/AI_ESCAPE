@@ -10,9 +10,14 @@ class TileMap3:
             data = json.load(f)
 
         self.tile_size = data.get('tile_size', 16)
-        grid_dim = data.get('grid_dim', [104, 58])
-        self.cols = grid_dim[0]
-        self.rows = grid_dim[1]
+        grid_dim = data.get('grid_dim', {})
+        if isinstance(grid_dim, dict):
+            self.cols = grid_dim.get('cols', 104)
+            self.rows = grid_dim.get('rows', 58)
+        else:
+            self.cols = grid_dim[0] if len(grid_dim) > 0 else 104
+            self.rows = grid_dim[1] if len(grid_dim) > 1 else 58
+
         self.map_width = self.cols * self.tile_size
         self.map_height = self.rows * self.tile_size
 

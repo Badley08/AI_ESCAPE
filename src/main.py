@@ -14,6 +14,7 @@ pygame.init()
 from level1.core.game import Game as Game1
 from level1.ui.hud import HUD as HUD1
 from level2.core.game2 import Game2
+from level3.core.game3 import Game3
 
 # Fenêtre du jeu
 pygame.display.set_caption("AI_ESCAPE")
@@ -42,6 +43,7 @@ level_map_image = pygame.transform.smoothscale(level_map_image, (720, 720))
 
 level_1_rect = pygame.Rect(561, 404, 310, 281)  # Sector 1 : Test Alpha
 level_2_rect = pygame.Rect(203, 276, 324, 290)  # Sector 2 : Test Beta
+level_3_rect = pygame.Rect(521, 152, 175, 218)  # Sector 3 : Test Gamma
 
 # Assets Level 1
 l1_bg = pygame.image.load('level1/assets/background.png').convert()
@@ -52,9 +54,12 @@ l1_victory_image = pygame.transform.smoothscale(l1_victory_image, (800, 250))
 l1_explosion_image = pygame.image.load('level1/assets/explosion.png').convert_alpha()
 l1_explosion_image = pygame.transform.smoothscale(l1_explosion_image, (400, 400))
 
-# Surface pré-allouée pour le verrouillage du secteur 2
-lock_overlay_surf = pygame.Surface((level_2_rect.width, level_2_rect.height), pygame.SRCALPHA)
-lock_overlay_surf.fill((20, 20, 30, 160))
+# Surfaces pré-allouées pour le verrouillage des secteurs
+lock_overlay_surf_2 = pygame.Surface((level_2_rect.width, level_2_rect.height), pygame.SRCALPHA)
+lock_overlay_surf_2.fill((20, 20, 30, 160))
+
+lock_overlay_surf_3 = pygame.Surface((level_3_rect.width, level_3_rect.height), pygame.SRCALPHA)
+lock_overlay_surf_3.fill((20, 20, 30, 160))
 
 clock = pygame.time.Clock()
 
@@ -71,15 +76,16 @@ def load_save():
                 return data
         except Exception:
             pass
-    return {'unlocked_levels': [1], 'current_mode': 'splash', 'saved_battery': 100.0, 'level2_state': None}
+    return {'unlocked_levels': [1], 'current_mode': 'splash', 'saved_battery': 100.0, 'level2_state': None, 'level3_state': None}
 
-def save_game(unlocked_levels, current_mode, game2=None, saved_battery=None):
+def save_game(unlocked_levels, current_mode, game2=None, game3=None, saved_battery=None):
     current_battery = saved_battery if saved_battery is not None else saved_progress.get('saved_battery', 100.0)
     save_data = {
         'unlocked_levels': list(unlocked_levels),
         'last_mode': current_mode,
         'saved_battery': current_battery,
-        'level2_state': game2.get_save_state() if (game2 and current_mode == 'level2' and game2.state == 'playing') else None
+        'level2_state': game2.get_save_state() if (game2 and current_mode == 'level2' and game2.state == 'playing') else None,
+        'level3_state': game3.get_save_state() if (game3 and current_mode == 'level3' and game3.state == 'playing') else None
     }
     try:
         with open(SAVE_FILE, 'w', encoding='utf-8') as f:
@@ -120,6 +126,7 @@ locked_alert_msg = ""
 game1 = None
 hud1 = None
 game2 = None
+game3 = None
 
 running = True
 
@@ -165,6 +172,7 @@ while running:
 
         hover_l1 = level_1_rect.collidepoint(mouse_pos)
         hover_l2 = level_2_rect.collidepoint(mouse_pos)
+        hover_l3 = level_3_rect.collidepoint(mouse_pos)
 
         # Secteur 1
         if hover_l1:
@@ -174,12 +182,10 @@ while running:
 
         # Secteur 2 (Verrouillé ou Débloqué)
         if 2 not in unlocked_levels:
-            screen.blit(lock_overlay_surf, level_2_rect.topleft)
+            screen.blit(lock_overlay_surf_2, level_2_rect.topleft)
             pygame.draw.rect(screen, (255, 60, 60), level_2_rect, 2, border_radius=12)
-            
-            badge = font_small.render("🔒 SECTEUR 2 VERROUILLÉ", True, (255, 80, 80))
+            badge = font_small.render("🔒 SECTEUR 2", True, (255, 80, 80))
             screen.blit(badge, badge.get_rect(center=level_2_rect.center))
-
             if hover_l2:
                 lbl = font_medium.render("🔒 SECTEUR 2 BLOQUÉ : Complétez le Secteur 1 d'abord !", True, (255, 80, 80))
                 screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
@@ -190,6 +196,23 @@ while running:
                 screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
             else:
                 pygame.draw.rect(screen, (50, 200, 255), level_2_rect, 1, border_radius=12)
+
+        # Secteur 3 (Verrouillé ou Débloqué)
+        if 3 not in unlocked_levels:
+            screen.blit(lock_overlay_surf_3, level_3_rect.topleft)
+            pygame.draw.rect(screen, (255, 60, 60), level_3_rect, 2, border_radius=12)
+            badge3 = font_small.render("🔒 SECTEUR 3", True, (255, 80, 80))
+            screen.blit(badge3, badge3.get_rect(center=level_3_rect.center))
+            if hover_l3:
+                lbl = font_medium.render("🔒 SECTEUR 3 BLOQUÉ : Complétez le Secteur 2 d'abord !", True, (255, 80, 80))
+                screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
+        else:
+            if hover_l3:
+                pygame.draw.rect(screen, (255, 100, 50), level_3_rect, 3, border_radius=12)
+                lbl = font_medium.render("SECTEUR 3 : TEST GAMMA (CLIQUEZ POUR ENTRER)", True, (255, 120, 60))
+                screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
+            else:
+                pygame.draw.rect(screen, (220, 100, 50), level_3_rect, 1, border_radius=12)
 
         if locked_alert_timer > 0:
             locked_alert_timer -= 1
@@ -216,6 +239,14 @@ while running:
                         current_mode = "level2"
                     else:
                         locked_alert_msg = "Accès Refusé : Terminez le Secteur 1 pour déverrouiller le Secteur 2 !"
+                        locked_alert_timer = 120
+                elif level_3_rect.collidepoint(event.pos):
+                    if 3 in unlocked_levels:
+                        play_music('level3/sounds/Obsidian_Gate.mp3', 0.7)
+                        game3 = Game3(saved_data=saved_progress)
+                        current_mode = "level3"
+                    else:
+                        locked_alert_msg = "Accès Refusé : Terminez le Secteur 2 pour déverrouiller le Secteur 3 !"
                         locked_alert_timer = 120
 
     # ---------------------------------------------------------
@@ -292,7 +323,7 @@ while running:
                 if event.key == pygame.K_ESCAPE:
                     game2.stop_all_sounds()
                     play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
-                    save_game(unlocked_levels, "level2", game2)
+                    save_game(unlocked_levels, "level2", game2=game2)
                     current_mode = "level_select"
                 elif event.key == pygame.K_r and game2.state in ("game_over", "victory"):
                     game2.stop_all_sounds()
@@ -307,10 +338,40 @@ while running:
             elif event.type == pygame.KEYUP:
                 game2.pressed[event.key] = False
 
+    # ---------------------------------------------------------
+    # 5. Gameplay NIVEAU 3 (Test Gamma)
+    # ---------------------------------------------------------
+    elif current_mode == "level3":
+        game3.update()
+        game3.render(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                game3.pressed[event.key] = True
+                if event.key == pygame.K_ESCAPE:
+                    game3.stop_all_sounds()
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    save_game(unlocked_levels, "level3", game3=game3)
+                    current_mode = "level_select"
+                elif event.key == pygame.K_r and game3.state in ("game_over", "victory"):
+                    game3.stop_all_sounds()
+                    play_music('level3/sounds/Obsidian_Gate.mp3', 0.7)
+                    game3 = Game3(saved_data=saved_progress)
+                elif event.key == pygame.K_SPACE and game3.state == "victory":
+                    game3.stop_all_sounds()
+                    play_music('level1/sounds/sleepless_corridor.mp3', 0.7)
+                    unlocked_levels.add(4)
+                    save_game(unlocked_levels, "level_select", saved_battery=game3.final_transferred_battery)
+                    current_mode = "level_select"
+            elif event.type == pygame.KEYUP:
+                game3.pressed[event.key] = False
+
     # Curseur Personnalisé
     screen.blit(pointer_image, mouse_pos)
     pygame.display.flip()
 
 # Sauvegarde automatique à la fermeture
-save_game(unlocked_levels, current_mode, game2)
+save_game(unlocked_levels, current_mode, game2=game2, game3=game3)
 pygame.quit()

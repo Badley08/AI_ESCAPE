@@ -1,0 +1,359 @@
+import math
+import random
+import pygame
+from level3.core.tilemap3 import TileMap3
+from level3.entities.player3 import Player3
+from level3.entities.enemy import EnemyRobot
+from level3.entities.projectile import Projectile
+from level3.entities.terminal import Terminal
+from level3.entities.explosion3 import Explosion3
+from level3.ui.hud3 import HUD3
+
+
+class Game3:
+    """Gestionnaire principal du Niveau 3 (TEST GAMMA) — Arène de combat & Générateurs."""
+
+    MAX_WAVES = 3
+    WAVE_ENEMIES = [3, 4, 5]  # Nombre d'ennemis par vague
+
+    def __init__(self, saved_data=None):
+        # 1. Carte de l'arène
+        self.tilemap = TileMap3('level3/assets/level3_grid.json')
+        self.bg_image = pygame.image.load('level3/assets/level3_background.png').convert()
+        self.bg_image = pygame.transform.smoothscale(
+            self.bg_image, (self.tilemap.map_width, self.tilemap.map_height))
+
+        # 2. Joueur (spawn en bas au centre)
+        spawn_x = self.tilemap.map_width // 2
+        spawn_y = self.tilemap.map_height - 60
+        self.player = Player3(spawn_x, spawn_y, self.tilemap)
+
+        # Batterie : récupère la valeur sauvegardée ou 100%
+        if saved_data and 'saved_battery' in saved_data:
+            self.player.battery = float(saved_data['saved_battery'])
+        elif saved_data and 'player_battery' in saved_data:
+            self.player.battery = float(saved_data['player_battery'])
+
+        # 3. Groupes de sprites
+        self.enemies = pygame.sprite.Group()
+        self.player_projectiles = pygame.sprite.Group()
+        self.enemy_projectiles = pygame.sprite.Group()
+        self.explosions = pygame.sprite.Group()
+
+        # 4. Terminaux (3 générateurs disposés dans l'arène)
+        mw = self.tilemap.map_width
+        mh = self.tilemap.map_height
+        self.terminals = [
+            Terminal(mw * 0.2, mh * 0.3, 1),   # Haut gauche
+            Terminal(mw * 0.8, mh * 0.3, 2),   # Haut droite
+            Terminal(mw * 0.5, mh * 0.55, 3),  # Centre
+        ]
+        # Vérifier que les terminaux sont en zone praticable
+        for t in self.terminals:
+            if not self.tilemap.is_walkable(t.x, t.y):
+                self._relocate_terminal(t)
+
+        # 5. Système de vagues
+        self.current_wave = 0
+        self.wave_active = False
+        self.wave_delay = 120  # 2 secondes avant la première vague
+        self.all_waves_complete = False
+
+        # 6. Points de spawn valides pour les ennemis (pré-calculés)
+        self._enemy_spawn_points = self._find_spawn_points()
+
+        # 7. Interface
+        self.hud = HUD3()
+        self.pressed = {}
+        self.state = "playing"
+        self.mouse_pos = (540, 360)
+
+        self.battery_bonus_awarded = 0.0
+        self.final_transferred_battery = 100.0
+
+        # 8. Porte de sortie (haut centre)
+        self.exit_rect = pygame.Rect(mw // 2 - 20, 20, 40, 40)
+        self.exit_open = False
+
+        # 9. Overlays pré-alloués
+        self.game_over_overlay = pygame.Surface((1080, 720), pygame.SRCALPHA)
+        self.game_over_overlay.fill((0, 0, 0, 185))
+        self.victory_overlay = pygame.Surface((1080, 720), pygame.SRCALPHA)
+        self.victory_overlay.fill((5, 20, 40, 185))
+
+        self.font_large = pygame.font.Font(None, 56)
+        self.font_med = pygame.font.Font(None, 30)
+
+        # 10. Audio
+        try:
+            self.snd_player_laser = pygame.mixer.Sound('level3/sounds/laser_player.mp3')
+            self.snd_player_laser.set_volume(0.5)
+            self.snd_enemy_laser = pygame.mixer.Sound('level3/sounds/laser_enemy.mp3')
+            self.snd_enemy_laser.set_volume(0.35)
+            self.snd_robot_destroyed = pygame.mixer.Sound('level3/sounds/robot_destroyed.mp3')
+            self.snd_robot_destroyed.set_volume(0.8)
+            self.snd_terminal = pygame.mixer.Sound('level3/sounds/terminal_activated.mp3')
+            self.snd_terminal.set_volume(0.9)
+        except Exception:
+            self.snd_player_laser = None
+            self.snd_enemy_laser = None
+            self.snd_robot_destroyed = None
+            self.snd_terminal = None
+
+    def _relocate_terminal(self, terminal):
+        """Déplace un terminal vers la position praticable la plus proche."""
+        tx, ty = int(terminal.x), int(terminal.y)
+        ts = self.tilemap.tile_size
+        for radius in range(1, 20):
+            for dr in range(-radius, radius + 1):
+                for dc in range(-radius, radius + 1):
+                    nx = tx + dc * ts
+                    ny = ty + dr * ts
+                    if self.tilemap.is_walkable(nx, ny):
+                        terminal.x = float(nx)
+                        terminal.y = float(ny)
+                        terminal.rect.center = (nx, ny)
+                        return
+
+    def _find_spawn_points(self):
+        """Trouve des positions praticables éloignées du joueur pour les spawns ennemis."""
+        points = []
+        ts = self.tilemap.tile_size
+        for r in range(3, self.tilemap.rows - 3, 4):
+            for c in range(3, self.tilemap.cols - 3, 4):
+                px = c * ts + ts // 2
+                py = r * ts + ts // 2
+                if self.tilemap.is_walkable(px, py):
+                    # Vérifier un espace 3x3 libre autour
+                    clear = all(
+                        self.tilemap.is_walkable(px + dx * ts, py + dy * ts)
+                        for dx in [-1, 0, 1] for dy in [-1, 0, 1]
+                    )
+                    if clear:
+                        points.append((px, py))
+        return points
+
+    def _spawn_wave(self):
+        """Spawn les ennemis de la vague courante."""
+        if self.current_wave >= self.MAX_WAVES:
+            self.all_waves_complete = True
+            return
+
+        count = self.WAVE_ENEMIES[self.current_wave]
+        # Filtrer les spawns éloignés du joueur
+        far_points = [p for p in self._enemy_spawn_points
+                      if math.hypot(p[0] - self.player.pos_x,
+                                    p[1] - self.player.pos_y) > 300]
+        if len(far_points) < count:
+            far_points = self._enemy_spawn_points[:]
+
+        random.shuffle(far_points)
+        for i in range(min(count, len(far_points))):
+            variant = (i % 3) + 1  # Variantes 1, 2, 3
+            ex, ey = far_points[i]
+            self.enemies.add(EnemyRobot(ex, ey, variant, self.tilemap))
+
+        self.current_wave += 1
+        self.wave_active = True
+
+    def get_save_state(self):
+        return {
+            'player_battery': round(self.player.battery, 1),
+            'current_wave': self.current_wave,
+        }
+
+    def stop_all_sounds(self):
+        pygame.mixer.stop()
+
+    def update(self):
+        if self.state != "playing":
+            return
+
+        # Caméra
+        cam_x = max(0, min(self.tilemap.map_width - 1080,
+                           int(self.player.pos_x - 540)))
+        cam_y = max(0, min(self.tilemap.map_height - 720,
+                           int(self.player.pos_y - 360)))
+
+        # Position souris en coordonnées monde
+        mx, my = pygame.mouse.get_pos()
+        self.mouse_pos = (mx, my)
+        world_mx = mx + cam_x
+        world_my = my + cam_y
+
+        # Joueur
+        self.player.move(self.pressed)
+        self.player.update_aim(world_mx, world_my)
+        self.player.update()
+
+        # Tir joueur (clic gauche)
+        mouse_buttons = pygame.mouse.get_pressed()
+        if mouse_buttons[0] and self.player.try_shoot():
+            angle = self.player.aim_angle
+            proj = Projectile(self.player.pos_x, self.player.pos_y,
+                              angle, True, self.tilemap)
+            self.player_projectiles.add(proj)
+            if self.snd_player_laser:
+                self.snd_player_laser.play()
+
+        # Système de vagues
+        if not self.wave_active and not self.all_waves_complete:
+            self.wave_delay -= 1
+            if self.wave_delay <= 0:
+                self._spawn_wave()
+                self.wave_delay = 180  # Délai entre vagues
+
+        if self.wave_active and len(self.enemies) == 0:
+            self.wave_active = False
+            self.wave_delay = 180  # 3 secondes avant prochaine vague
+
+        # Mise à jour synchronisée des ennemis
+        EnemyRobot.tick_global_clock()
+        for e in list(self.enemies):
+            e.update(self.player, self.enemy_projectiles, self.snd_enemy_laser)
+
+        # Mise à jour des projectiles
+        self.player_projectiles.update()
+        self.enemy_projectiles.update()
+        self.explosions.update()
+
+        # Collision : lasers joueur → ennemis
+        for proj in list(self.player_projectiles):
+            for enemy in list(self.enemies):
+                if proj.rect.colliderect(enemy.hitbox):
+                    proj.kill()
+                    if enemy.take_hit():
+                        # Ennemi détruit
+                        self.explosions.add(Explosion3(enemy.pos_x, enemy.pos_y))
+                        enemy.kill()
+                        self.player.restore_battery(3.0)
+                        if self.snd_robot_destroyed:
+                            self.snd_robot_destroyed.play()
+                    break
+
+        # Collision : lasers ennemis → joueur
+        player_hit_rect = pygame.Rect(0, 0, 20, 20)
+        player_hit_rect.center = (round(self.player.pos_x), round(self.player.pos_y))
+        for proj in list(self.enemy_projectiles):
+            if proj.rect.colliderect(player_hit_rect):
+                proj.kill()
+                self.player.take_damage(5.0)
+
+        # Terminaux : activation avec touche E
+        holding_e = self.pressed.get(pygame.K_e, False)
+        for t in self.terminals:
+            t.update()
+            just_activated = t.try_activate(self.player.pos_x, self.player.pos_y, holding_e)
+            if just_activated:
+                self.player.restore_battery(10.0)
+                if self.snd_terminal:
+                    self.snd_terminal.play()
+
+        # Vérifier ouverture de la sortie
+        terminals_done = sum(1 for t in self.terminals if t.activated)
+        if (terminals_done >= len(self.terminals) and
+                self.all_waves_complete and len(self.enemies) == 0):
+            self.exit_open = True
+
+        # Défaite
+        if self.player.battery <= 0:
+            self.state = "game_over"
+            self.stop_all_sounds()
+            return
+
+        # Victoire
+        if self.exit_open and self.player.hitbox.colliderect(self.exit_rect):
+            self.state = "victory"
+            self.stop_all_sounds()
+            # Bonus de performance
+            perf = min(1.0, self.player.battery / 100.0)
+            self.battery_bonus_awarded = round(20.0 + perf * 20.0, 1)
+            self.final_transferred_battery = min(
+                100.0, round(self.player.battery + self.battery_bonus_awarded, 1))
+            return
+
+    def render(self, screen):
+        cam_x = max(0, min(self.tilemap.map_width - 1080,
+                           int(self.player.pos_x - 540)))
+        cam_y = max(0, min(self.tilemap.map_height - 720,
+                           int(self.player.pos_y - 360)))
+        off_x = -cam_x
+        off_y = -cam_y
+
+        # Fond
+        screen.fill((5, 5, 10))
+        screen.blit(self.bg_image, (off_x, off_y))
+
+        # Terminaux
+        for t in self.terminals:
+            t.draw(screen, off_x, off_y)
+
+        # Porte de sortie
+        door_pulse = abs(math.sin(pygame.time.get_ticks() * 0.008))
+        door_color = (0, 255, 120) if self.exit_open else (255, 50, 50)
+        dsx = self.exit_rect.centerx + off_x
+        dsy = self.exit_rect.centery + off_y
+        pygame.draw.circle(screen, door_color, (dsx, dsy), int(18 + door_pulse * 4), 3)
+        if self.exit_open:
+            pygame.draw.circle(screen, (50, 255, 150), (dsx, dsy), 14)
+
+        # Explosions
+        for exp in self.explosions:
+            screen.blit(exp.image, (exp.rect.x + off_x, exp.rect.y + off_y))
+
+        # Ennemis
+        for e in self.enemies:
+            screen.blit(e.image, (e.rect.x + off_x, e.rect.y + off_y))
+            # Barre de vie
+            if e.hp < e.max_hp:
+                bar_w = 30
+                bx = round(e.pos_x) + off_x - bar_w // 2
+                by = round(e.pos_y) + off_y - 30
+                pygame.draw.rect(screen, (60, 0, 0), (bx, by, bar_w, 4))
+                fill = int(bar_w * e.hp / e.max_hp)
+                pygame.draw.rect(screen, (255, 50, 50), (bx, by, fill, 4))
+
+        # Projectiles joueur
+        for p in self.player_projectiles:
+            screen.blit(p.image, (p.rect.x + off_x, p.rect.y + off_y))
+
+        # Projectiles ennemis
+        for p in self.enemy_projectiles:
+            screen.blit(p.image, (p.rect.x + off_x, p.rect.y + off_y))
+
+        # Joueur
+        screen.blit(self.player.image,
+                     (self.player.rect.x + off_x, self.player.rect.y + off_y))
+
+        # HUD
+        terminals_done = sum(1 for t in self.terminals if t.activated)
+        self.hud.draw(
+            screen, self.player,
+            self.current_wave, self.MAX_WAVES,
+            len(self.enemies), terminals_done, len(self.terminals),
+            self.mouse_pos
+        )
+
+        # Écrans de fin
+        if self.state == "game_over":
+            screen.blit(self.game_over_overlay, (0, 0))
+            t1 = self.font_large.render("SYSTÈME CRITIQUE : DÉTRUIT", True, (255, 50, 50))
+            t2 = self.font_med.render(
+                "Appuyez sur R pour Recommencer | ECHAP pour la Station", True, (0, 200, 255))
+            screen.blit(t1, t1.get_rect(centerx=540, centery=320))
+            screen.blit(t2, t2.get_rect(centerx=540, centery=400))
+        elif self.state == "victory":
+            screen.blit(self.victory_overlay, (0, 0))
+            t1 = self.font_large.render("TEST GAMMA ACCOMPLI !", True, (50, 255, 120))
+            t2 = self.font_med.render(
+                f"Batterie: {int(self.player.battery)}%  |  Bonus: +{int(self.battery_bonus_awarded)}%",
+                True, (255, 255, 255))
+            t3 = self.font_med.render(
+                f"Batterie transmise: {int(self.final_transferred_battery)}%",
+                True, (0, 220, 255))
+            t4 = self.font_med.render(
+                "Appuyez sur ESPACE pour revenir à la Station", True, (50, 255, 120))
+            screen.blit(t1, t1.get_rect(centerx=540, centery=270))
+            screen.blit(t2, t2.get_rect(centerx=540, centery=330))
+            screen.blit(t3, t3.get_rect(centerx=540, centery=380))
+            screen.blit(t4, t4.get_rect(centerx=540, centery=450))
