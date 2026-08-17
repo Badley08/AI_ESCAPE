@@ -4,7 +4,7 @@ import pygame
 class CleanerRobot(pygame.sprite.Sprite):
     """Véhicule de nettoyage au sol avec collisions strictes intégrales."""
 
-    SPEED = 0
+    SPEED = 2.2
 
     def __init__(self, x, y, tilemap):
         super().__init__()
