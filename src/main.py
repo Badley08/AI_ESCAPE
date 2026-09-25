@@ -1,14 +1,132 @@
 import os
 import sys
-import json
+import subprocess
+
+# Auto-activation intelligente de l'environnement virtuel fonctionnel
+def _ensure_venv():
+    if os.environ.get("_VENV_SEEN"):
+        return
+    script_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+
+    def check_python(py_exe):
+        if not os.path.isfile(py_exe):
+            return False
+        try:
+            res = subprocess.run([py_exe, "-c", "import pygame; pygame.init(); font = pygame.font.Font(None, 24)"], capture_output=True, timeout=2)
+            return res.returncode == 0
+        except Exception:
+            return False
+
+    current_exe = os.path.realpath(sys.executable)
+    if check_python(current_exe):
+        return  # L'environnement actuel fonctionne parfaitement !
+
+    best_python = None
+    current_dir = script_dir
+    for _ in range(5):
+        for venv_name in [".venv", "env", "venv"]:
+            if sys.platform == "win32":
+                cand = os.path.join(current_dir, venv_name, "Scripts", "python.exe")
+            else:
+                cand = os.path.join(current_dir, venv_name, "bin", "python")
+            if check_python(cand):
+                best_python = cand
+                break
+        if best_python:
+            break
+        parent = os.path.dirname(current_dir)
+        if parent == current_dir:
+            break
+        current_dir = parent
+
+    if not best_python:
+        current_dir = script_dir
+        for _ in range(5):
+            for venv_name in [".venv", "env", "venv"]:
+                if sys.platform == "win32":
+                    cand = os.path.join(current_dir, venv_name, "Scripts", "python.exe")
+                else:
+                    cand = os.path.join(current_dir, venv_name, "bin", "python")
+                if os.path.isfile(cand):
+                    best_python = cand
+                    break
+            if best_python:
+                break
+            parent = os.path.dirname(current_dir)
+            if parent == current_dir:
+                break
+            current_dir = parent
+
+    if best_python and os.path.realpath(sys.executable) != os.path.realpath(best_python):
+        os.environ["_VENV_SEEN"] = "1"
+        os.execv(best_python, [best_python] + sys.argv)
+
+_ensure_venv()
 
 # Résolution des chemins et modules compatible Windows & Linux
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
 os.chdir(BASE_DIR)
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+import json
 import pygame
+
+try:
+    from PIL import Image, ImageFont, ImageDraw
+    _HAS_PIL = True
+except ImportError:
+    _HAS_PIL = False
+
+# Patch transparent pour charger les images (PNG, JPG, etc.) via Pillow sans fichiers BMP
+_original_pygame_image_load = pygame.image.load
+
+def _pillow_image_load(file_path, namehint=""):
+    try:
+        return _original_pygame_image_load(file_path, namehint)
+    except Exception as err:
+        if _HAS_PIL:
+            im = Image.open(file_path)
+            if im.mode not in ('RGB', 'RGBA'):
+                im = im.convert('RGBA')
+            mode = im.mode
+            size = im.size
+            data = im.tobytes()
+            return pygame.image.fromstring(data, size, mode)
+        raise err
+
+pygame.image.load = _pillow_image_load
+
+# Secours pour pygame.font si absent dans le build Python actuel
+try:
+    _test_font = pygame.font.Font(None, 24)
+except Exception:
+    if _HAS_PIL:
+        class _FallbackFont:
+            def __init__(self, name=None, size=24):
+                self.size = size or 24
+                try:
+                    self.pil_font = ImageFont.load_default()
+                except Exception:
+                    self.pil_font = None
+
+            def render(self, text, antialias, color, background=None):
+                text_str = str(text)
+                w = max(10, len(text_str) * max(6, self.size // 2))
+                h = max(10, int(self.size * 1.2))
+                im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+                draw = ImageDraw.Draw(im)
+                draw.text((0, 0), text_str, fill=color)
+                return pygame.image.fromstring(im.tobytes(), im.size, im.mode)
+
+        class _FontModule:
+            Font = _FallbackFont
+            def init(self): pass
+            def quit(self): pass
+            def get_init(self): return True
+
+        pygame.font = _FontModule()
+
 pygame.init()
 
 from Station_Sector1.level1.core.game import Game as Game1
