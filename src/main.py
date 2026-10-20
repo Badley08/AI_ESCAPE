@@ -2,7 +2,6 @@ import os
 import sys
 import subprocess
 
-# Auto-activation intelligente de l'environnement virtuel fonctionnel
 def _ensure_venv():
     if os.environ.get("_VENV_SEEN"):
         return
@@ -19,7 +18,7 @@ def _ensure_venv():
 
     current_exe = os.path.realpath(sys.executable)
     if check_python(current_exe):
-        return  # L'environnement actuel fonctionne parfaitement !
+        return 
 
     best_python = None
     current_dir = script_dir
@@ -78,7 +77,7 @@ try:
 except ImportError:
     _HAS_PIL = False
 
-# Patch transparent pour charger les images (PNG, JPG, etc.) via Pillow sans fichiers BMP
+# Patch pour charger les images (PNG, JPG, etc.) via Pillow sans fichiers BMP
 _original_pygame_image_load = pygame.image.load
 
 def _pillow_image_load(file_path, namehint=""):
@@ -302,10 +301,10 @@ while running:
         if 2 not in unlocked_levels:
             screen.blit(lock_overlay_surf_2, level_2_rect.topleft)
             pygame.draw.rect(screen, (255, 60, 60), level_2_rect, 2, border_radius=12)
-            badge = font_small.render("🔒 SECTEUR 2", True, (255, 80, 80))
+            badge = font_small.render(" SECTEUR 2", True, (255, 80, 80))
             screen.blit(badge, badge.get_rect(center=level_2_rect.center))
             if hover_l2:
-                lbl = font_medium.render("🔒 SECTEUR 2 BLOQUÉ : Complétez le Secteur 1 d'abord !", True, (255, 80, 80))
+                lbl = font_medium.render(" SECTEUR 2 BLOQUÉ : Complétez le Secteur 1 d'abord !", True, (255, 80, 80))
                 screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
         else:
             if hover_l2:
@@ -319,10 +318,10 @@ while running:
         if 3 not in unlocked_levels:
             screen.blit(lock_overlay_surf_3, level_3_rect.topleft)
             pygame.draw.rect(screen, (255, 60, 60), level_3_rect, 2, border_radius=12)
-            badge3 = font_small.render("🔒 SECTEUR 3", True, (255, 80, 80))
+            badge3 = font_small.render(" SECTEUR 3", True, (255, 80, 80))
             screen.blit(badge3, badge3.get_rect(center=level_3_rect.center))
             if hover_l3:
-                lbl = font_medium.render("🔒 SECTEUR 3 BLOQUÉ : Complétez le Secteur 2 d'abord !", True, (255, 80, 80))
+                lbl = font_medium.render(" SECTEUR 3 BLOQUÉ : Complétez le Secteur 2 d'abord !", True, (255, 80, 80))
                 screen.blit(lbl, lbl.get_rect(centerx=540, y=670))
         else:
             if hover_l3:
